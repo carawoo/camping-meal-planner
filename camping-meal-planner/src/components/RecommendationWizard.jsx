@@ -1,0 +1,284 @@
+import { useState } from 'react';
+import { meals } from '../data/meals';
+
+export default function RecommendationWizard({ isOpen, onClose, onRecommend }) {
+    const [preferences, setPreferences] = useState({
+        campingStyle: '',
+        duration: '',
+        location: '',
+        foodStyle: []
+    });
+
+    if (!isOpen) return null;
+
+    const handleSelect = (key, value) => {
+        if (key === 'foodStyle') {
+            setPreferences(prev => ({
+                ...prev,
+                foodStyle: prev.foodStyle.includes(value)
+                    ? prev.foodStyle.filter(v => v !== value)
+                    : [...prev.foodStyle, value]
+            }));
+        } else {
+            setPreferences(prev => ({ ...prev, [key]: value }));
+        }
+    };
+
+    const getRecommendations = () => {
+        const allMeals = [...meals.arrival, ...meals.dinner, ...meals.breakfast];
+        let filtered = allMeals.filter(meal => {
+            if (meal.isHidden) return false;
+            if (preferences.campingStyle === 'car') {
+                return meal.cookingTime <= 20 && !['seafood', 'bbq'].some(tag => meal.tags?.includes(tag));
+            } else if (preferences.campingStyle === 'backpacking') {
+                return meal.difficulty === 'easy' && meal.cookingTime <= 15;
+            }
+            return true;
+        });
+
+        if (preferences.foodStyle.length > 0) {
+            filtered = filtered.filter(meal => {
+                if (preferences.foodStyle.includes('korean') && meal.category === 'korean') return true;
+                if (preferences.foodStyle.includes('western') && meal.category === 'western') return true;
+                if (preferences.foodStyle.includes('simple') &&
+                    (meal.category === 'simple' || meal.difficulty === 'easy')) return true;
+                return false;
+            });
+        }
+
+        if (preferences.location === 'coast') {
+            filtered.sort((a, b) => {
+                const aSeafood = a.tags?.includes('seafood') ? -1 : 0;
+                const bSeafood = b.tags?.includes('seafood') ? -1 : 0;
+                return aSeafood - bSeafood;
+            });
+        } else if (preferences.location === 'mountain') {
+            filtered.sort((a, b) => {
+                const aWarm = (a.tags?.includes('bbq') || a.tags?.includes('hot')) ? -1 : 0;
+                const bWarm = (b.tags?.includes('bbq') || b.tags?.includes('hot')) ? -1 : 0;
+                return aWarm - bWarm;
+            });
+        }
+
+        // Build schedule based on duration
+        const schedule = [];
+
+        if (preferences.duration === 'day') {
+            // 당일: 점심, 저녁
+            schedule.push({
+                day: 1,
+                meals: [
+                    { type: 'lunch', item: filtered[0] || allMeals[0] },
+                    { type: 'dinner', item: filtered[1] || allMeals[1] }
+                ]
+            });
+        } else if (preferences.duration === '1night') {
+            // 1박2일: 3끼 (점심 시작 or 저녁 시작)
+            // Randomly choose start time (50/50) or could be user input later
+            const startWithLunch = Math.random() > 0.5;
+
+            if (startWithLunch) {
+                // Case A: 점심 -> 저녁 -> 다음날 아침
+                schedule.push({
+                    day: 1,
+                    meals: [
+                        { type: 'lunch', item: filtered[0] || allMeals[0] },
+                        { type: 'dinner', item: filtered[1] || allMeals[1] }
+                    ]
+                });
+                schedule.push({
+                    day: 2,
+                    meals: [
+                        { type: 'breakfast', item: filtered[2] || allMeals[2] }
+                    ]
+                });
+            } else {
+                // Case B: 저녁 -> 다음날 아침 -> 다음날 점심
+                schedule.push({
+                    day: 1,
+                    meals: [
+                        { type: 'dinner', item: filtered[0] || allMeals[0] }
+                    ]
+                });
+                schedule.push({
+                    day: 2,
+                    meals: [
+                        { type: 'breakfast', item: filtered[1] || allMeals[1] },
+                        { type: 'lunch', item: filtered[2] || allMeals[2] }
+                    ]
+                });
+            }
+        } else if (preferences.duration === '2nights') {
+            // 2박3일: Day1(저녁), Day2(아침,점심,저녁), Day3(아침) -> Total 5 meals
+            // Or Day1(점심,저녁) ... -> Total 6 meals. 
+            // Let's stick to a standard 5-meal flow for 2N3D to be safe/common:
+            // Day 1: Dinner
+            // Day 2: Breakfast, Lunch, Dinner
+            // Day 3: Breakfast
+            schedule.push({
+                day: 1,
+                meals: [
+                    { type: 'dinner', item: filtered[0] || allMeals[0] }
+                ]
+            });
+            schedule.push({
+                day: 2,
+                meals: [
+                    { type: 'breakfast', item: filtered[1] || allMeals[1] },
+                    { type: 'lunch', item: filtered[2] || allMeals[2] },
+                    { type: 'dinner', item: filtered[3] || allMeals[3] }
+                ]
+            });
+            schedule.push({
+                day: 3,
+                meals: [
+                    { type: 'breakfast', item: filtered[4] || allMeals[4] }
+                ]
+            });
+        }
+
+        return {
+            duration: preferences.duration === 'day' ? '당일' :
+                preferences.duration === '1night' ? '1박 2일' : '2박 3일',
+            style: preferences.campingStyle === 'car' ? '차박' :
+                preferences.campingStyle === 'auto' ? '오토캠핑' : '백패킹',
+            schedule
+        };
+    };
+
+    const handleGetRecommendations = () => {
+        if (!preferences.campingStyle || !preferences.duration || !preferences.location) {
+            alert('모든 항목을 선택해주세요!');
+            return;
+        }
+
+        const recommendations = getRecommendations();
+        onRecommend(recommendations);
+
+        // Reset
+        setPreferences({
+            campingStyle: '',
+            duration: '',
+            location: '',
+            foodStyle: []
+        });
+
+        onClose();
+    };
+
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-content wizard-modal" onClick={e => e.stopPropagation()}>
+                <div className="modal-header">
+                    <h2>🎯 맞춤 추천</h2>
+                    <button className="modal-close" onClick={onClose}>×</button>
+                </div>
+
+                <div className="modal-body">
+                    {/* Camping Style */}
+                    <div className="wizard-section">
+                        <h3 className="wizard-question">Q1. 캠핑 스타일은?</h3>
+                        <div className="wizard-options">
+                            {[
+                                { value: 'car', label: '🚗 차박', desc: '차에서 간편하게' },
+                                { value: 'auto', label: '⛺ 오토캠핑', desc: '텐트 + 차량 이동' },
+                                { value: 'backpacking', label: '🎒 백패킹', desc: '가볍게 도보로' }
+                            ].map(option => (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    className={`wizard-option ${preferences.campingStyle === option.value ? 'selected' : ''}`}
+                                    onClick={() => handleSelect('campingStyle', option.value)}
+                                >
+                                    <div className="option-label">{option.label}</div>
+                                    <div className="option-desc">{option.desc}</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Duration */}
+                    <div className="wizard-section">
+                        <h3 className="wizard-question">Q2. 캠핑 일수는?</h3>
+                        <div className="wizard-options">
+                            {[
+                                { value: 'day', label: '☀️ 당일', desc: '2끼' },
+                                { value: '1night', label: '🌙 1박2일', desc: '3끼' },
+                                { value: '2nights', label: '🌙🌙 2박3일', desc: '5끼' }
+                            ].map(option => (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    className={`wizard-option ${preferences.duration === option.value ? 'selected' : ''}`}
+                                    onClick={() => handleSelect('duration', option.value)}
+                                >
+                                    <div className="option-label">{option.label}</div>
+                                    <div className="option-desc">{option.desc}</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Location */}
+                    <div className="wizard-section">
+                        <h3 className="wizard-question">Q3. 캠핑 지역은?</h3>
+                        <div className="wizard-options">
+                            {[
+                                { value: 'coast', label: '🌊 해안', desc: '바다 근처' },
+                                { value: 'mountain', label: '⛰️ 산', desc: '산속' },
+                                { value: 'valley', label: '🏞️ 계곡', desc: '물놀이' },
+                                { value: 'field', label: '🌾 평지', desc: '넓은 공간' }
+                            ].map(option => (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    className={`wizard-option ${preferences.location === option.value ? 'selected' : ''}`}
+                                    onClick={() => handleSelect('location', option.value)}
+                                >
+                                    <div className="option-label">{option.label}</div>
+                                    <div className="option-desc">{option.desc}</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Food Style */}
+                    <div className="wizard-section">
+                        <h3 className="wizard-question">Q4. 선호 음식 스타일은? (복수 선택 가능)</h3>
+                        <div className="wizard-options">
+                            {[
+                                { value: 'korean', label: '🇰🇷 한식', desc: '김치, 찌개 등' },
+                                { value: 'western', label: '🍕 양식', desc: '파스타, 스테이크' },
+                                { value: 'simple', label: '⚡ 간편식', desc: '빠르고 쉽게' }
+                            ].map(option => (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    className={`wizard-option ${preferences.foodStyle.includes(option.value) ? 'selected' : ''}`}
+                                    onClick={() => handleSelect('foodStyle', option.value)}
+                                >
+                                    <div className="option-label">{option.label}</div>
+                                    <div className="option-desc">{option.desc}</div>
+                                </button>
+                            ))}
+                        </div>
+                        <p className="wizard-hint">※ 선택하지 않으면 모든 스타일 추천</p>
+                    </div>
+                </div>
+
+                <div className="modal-footer">
+                    <button className="btn btn-outline" onClick={onClose}>
+                        취소
+                    </button>
+                    <button
+                        className="btn btn-primary"
+                        onClick={handleGetRecommendations}
+                        style={{ padding: '12px 32px' }}
+                    >
+                        추천 받기 →
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
