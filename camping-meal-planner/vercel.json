@@ -1,0 +1,5 @@
+{
+    "buildCommand": "cd camping-meal-planner && npm install && npm run build",
+    "outputDirectory": "camping-meal-planner/dist",
+    "installCommand": "cd camping-meal-planner && npm install"
+}
