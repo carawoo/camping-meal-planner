@@ -2,7 +2,7 @@ import React from 'react';
 import Card from './Card';
 import { allergens as allergenLabels } from '../data/meals';
 
-const MealCard = ({ meal }) => {
+const MealCard = ({ meal, onSwap, peopleCount }) => {
     const handleBuy = (platform) => {
         const baseUrl = platform === 'coupang'
             ? 'https://www.coupang.com/np/search?component=&q='
@@ -81,6 +81,17 @@ const MealCard = ({ meal }) => {
                         </>
                     )}
                 </div>
+
+                {/* Swap Button (if in timeline) */}
+                {onSwap && (
+                    <button
+                        className="btn btn-secondary"
+                        onClick={onSwap}
+                        style={{ width: '100%', marginBottom: '12px' }}
+                    >
+                        🔄 다른 메뉴로 변경
+                    </button>
+                )}
 
                 {/* Buy Buttons */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
