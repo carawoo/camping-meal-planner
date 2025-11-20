@@ -149,11 +149,17 @@ export default function MealPlan({ isOpen, onClose, plan, onSave }) {
 
                     {/* Timeline */}
                     <div className="meal-timeline">
-                        {plan.schedule.map((day, dayIndex) => (
+                        {localPlan.schedule.map((day, dayIndex) => (
                             <div key={dayIndex} className="timeline-day">
-                                <div className="day-header">
-                                    <span className="day-badge">Day {dayIndex + 1}</span>
-                                    <span className="day-name">{getDayLabel(dayIndex)}</span>
+                                <div className="timeline-day-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <h3>Day {dayIndex + 1} - {getDayLabel(dayIndex)}</h3>
+                                    <button
+                                        className="btn-regenerate-day"
+                                        onClick={() => regenerateDay(dayIndex)}
+                                        title="이 날 전체 메뉴 변경"
+                                    >
+                                        🔄 전체 변경
+                                    </button>
                                 </div>
 
                                 <div className="day-meals">
@@ -195,9 +201,26 @@ export default function MealPlan({ isOpen, onClose, plan, onSave }) {
                                                         </div>
                                                     ) : (
                                                         <>
-                                                            <img src={meal.item.image} alt={meal.item.title} className="timeline-meal-image" />
+                                                            <div className="timeline-meal-image">
+                                                                <img src={meal.item.image} alt={meal.item.title} />
+                                                            </div>
                                                             <div className="timeline-meal-info">
-                                                                <div className="timeline-meal-title">{meal.item.title}</div>
+                                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                                        <span className="meal-emoji">{meal.item.emoji}</span>
+                                                                        <span className="meal-title">{meal.item.title}</span>
+                                                                    </div>
+                                                                    <button
+                                                                        className="btn-regenerate-meal"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            regenerateMeal(dayIndex, mealIndex);
+                                                                        }}
+                                                                        title="다른 메뉴로 변경"
+                                                                    >
+                                                                        🔄
+                                                                    </button>
+                                                                </div>
                                                                 <div className="timeline-meal-meta">
                                                                     ₩{meal.item.price?.toLocaleString()} • {meal.item.cookingTime}분
                                                                 </div>
@@ -233,10 +256,27 @@ export default function MealPlan({ isOpen, onClose, plan, onSave }) {
                         닫기
                     </button>
                     <button
-                        className={`btn ${isSaved ? 'btn-secondary' : 'btn-primary'}`}
-                        onClick={handleSave}
+                        className="btn btn-secondary"
+                        onClick={() => {
+                            // Regenerate all days
+                            localPlan.schedule.forEach((day, dayIndex) => {
+                                regenerateDay(dayIndex);
+                            });
+                        }}
                     >
-                        {isSaved ? '✓ 저장됨' : '계획 저장'}
+                        🔄 전체 재추천
+                    </button>
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => {
+                            if (isSaved) {
+                                alert('이미 저장된 식단 계획입니다!');
+                                return;
+                            }
+                            onSave(localPlan);
+                        }}
+                    >
+                        계획 저장
                     </button>
                 </div>
             </div>
