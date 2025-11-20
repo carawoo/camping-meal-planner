@@ -6,18 +6,21 @@ export default function RecommendationWizard({ isOpen, onClose, onRecommend }) {
         campingStyle: '',
         duration: '',
         location: '',
-        foodStyle: []
+        foodStyle: [],
+        allergies: [],
+        dietary: [],
+        maxSpicy: 3
     });
 
     if (!isOpen) return null;
 
     const handleSelect = (key, value) => {
-        if (key === 'foodStyle') {
+        if (key === 'foodStyle' || key === 'allergies' || key === 'dietary') {
             setPreferences(prev => ({
                 ...prev,
-                foodStyle: prev.foodStyle.includes(value)
-                    ? prev.foodStyle.filter(v => v !== value)
-                    : [...prev.foodStyle, value]
+                [key]: prev[key].includes(value)
+                    ? prev[key].filter(v => v !== value)
+                    : [...prev[key], value]
             }));
         } else {
             setPreferences(prev => ({ ...prev, [key]: value }));
@@ -28,6 +31,29 @@ export default function RecommendationWizard({ isOpen, onClose, onRecommend }) {
         const allMeals = [...meals.arrival, ...meals.dinner, ...meals.breakfast];
         let filtered = allMeals.filter(meal => {
             if (meal.isHidden) return false;
+
+            // Filter by allergies
+            if (preferences.allergies.length > 0) {
+                const hasAllergen = meal.allergens?.some(allergen =>
+                    preferences.allergies.includes(allergen)
+                );
+                if (hasAllergen) return false;
+            }
+
+            // Filter by dietary preferences
+            if (preferences.dietary.length > 0) {
+                const matchesDiet = preferences.dietary.every(diet =>
+                    meal.dietary?.includes(diet)
+                );
+                if (!matchesDiet) return false;
+            }
+
+            // Filter by spicy level
+            if (meal.spicyLevel && meal.spicyLevel > preferences.maxSpicy) {
+                return false;
+            }
+
+            // Filter by camping style
             if (preferences.campingStyle === 'car') {
                 return meal.cookingTime <= 20 && !['seafood', 'bbq'].some(tag => meal.tags?.includes(tag));
             } else if (preferences.campingStyle === 'backpacking') {
@@ -160,7 +186,10 @@ export default function RecommendationWizard({ isOpen, onClose, onRecommend }) {
             campingStyle: '',
             duration: '',
             location: '',
-            foodStyle: []
+            foodStyle: [],
+            allergies: [],
+            dietary: [],
+            maxSpicy: 3
         });
 
         onClose();
@@ -263,6 +292,76 @@ export default function RecommendationWizard({ isOpen, onClose, onRecommend }) {
                             ))}
                         </div>
                         <p className="wizard-hint">※ 선택하지 않으면 모든 스타일 추천</p>
+                    </div>
+
+                    {/* Allergies */}
+                    <div className="wizard-section">
+                        <h3 className="wizard-question">Q5. 알레르기가 있나요? (복수 선택 가능)</h3>
+                        <div className="wizard-options wizard-chips">
+                            {[
+                                { value: 'seafood', label: '🦐 해산물' },
+                                { value: 'nuts', label: '🥜 견과류' },
+                                { value: 'dairy', label: '🥛 유제품' },
+                                { value: 'gluten', label: '🌾 글루텐' },
+                                { value: 'soy', label: '🫘 대두' },
+                                { value: 'eggs', label: '🥚 계란' }
+                            ].map(option => (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    className={`wizard-chip ${preferences.allergies.includes(option.value) ? 'selected' : ''}`}
+                                    onClick={() => handleSelect('allergies', option.value)}
+                                >
+                                    {option.label}
+                                </button>
+                            ))}
+                        </div>
+                        <p className="wizard-hint">※ 해당 재료가 포함된 메뉴는 제외됩니다</p>
+                    </div>
+
+                    {/* Dietary Preferences */}
+                    <div className="wizard-section">
+                        <h3 className="wizard-question">Q6. 식이 제한이 있나요? (복수 선택 가능)</h3>
+                        <div className="wizard-options wizard-chips">
+                            {[
+                                { value: 'vegetarian', label: '🥗 채식' },
+                                { value: 'vegan', label: '🌱 비건' },
+                                { value: 'halal', label: '🕌 할랄' }
+                            ].map(option => (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    className={`wizard-chip ${preferences.dietary.includes(option.value) ? 'selected' : ''}`}
+                                    onClick={() => handleSelect('dietary', option.value)}
+                                >
+                                    {option.label}
+                                </button>
+                            ))}
+                        </div>
+                        <p className="wizard-hint">※ 선택한 식이 제한에 맞는 메뉴만 추천합니다</p>
+                    </div>
+
+                    {/* Spicy Level */}
+                    <div className="wizard-section">
+                        <h3 className="wizard-question">Q7. 매운맛 강도는 어느 정도까지?</h3>
+                        <div className="spicy-slider">
+                            <input
+                                type="range"
+                                min="0"
+                                max="5"
+                                value={preferences.maxSpicy}
+                                onChange={(e) => setPreferences(prev => ({ ...prev, maxSpicy: parseInt(e.target.value) }))}
+                                className="wizard-range"
+                            />
+                            <div className="spicy-label">
+                                {preferences.maxSpicy === 0 ? '안매움' :
+                                    preferences.maxSpicy === 1 ? '약간 매움' :
+                                        preferences.maxSpicy === 2 ? '보통 매움' :
+                                            preferences.maxSpicy === 3 ? '매움' :
+                                                preferences.maxSpicy === 4 ? '많이 매움' : '매우 매움'}
+                                <span className="spicy-level"> ({preferences.maxSpicy}/5)</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

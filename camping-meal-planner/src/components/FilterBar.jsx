@@ -32,79 +32,99 @@ export default function FilterBar({ onFilterChange }) {
         handleFilterChange('dietary', newDietary);
     };
 
+    const handleReset = () => {
+        const initialFilters = {
+            people: 'all',
+            timeOfDay: 'all',
+            difficulty: 'all',
+            allergies: [],
+            dietary: [],
+            maxSpicy: 5
+        };
+        setFilters(initialFilters);
+        onFilterChange(initialFilters);
+    };
+
     return (
         <div className="filter-bar-container">
             <div className="filter-bar">
-                {/* People Filter */}
-                <div className="filter-group">
-                    <span className="filter-label">👥 인원</span>
-                    <div className="filter-buttons">
-                        {['all', '1-2', '3-4', '5+'].map(value => (
-                            <button
-                                key={value}
-                                className={`filter-btn ${filters.people === value ? 'active' : ''}`}
-                                onClick={() => handleFilterChange('people', value)}
-                            >
-                                {value === 'all' ? '전체' : value + '명'}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Time of Day Filter */}
-                <div className="filter-group">
-                    <span className="filter-label">🕐 시간대</span>
-                    <div className="filter-buttons">
-                        {[
-                            { value: 'all', label: '전체' },
-                            { value: 'breakfast', label: '아침' },
-                            { value: 'lunch', label: '점심' },
-                            { value: 'dinner', label: '저녁' }
-                        ].map(({ value, label }) => (
-                            <button
-                                key={value}
-                                className={`filter-btn ${filters.timeOfDay === value ? 'active' : ''}`}
-                                onClick={() => handleFilterChange('timeOfDay', value)}
-                            >
-                                {label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Difficulty Filter */}
-                <div className="filter-group">
-                    <span className="filter-label">⭐ 난이도</span>
-                    <div className="filter-buttons">
-                        {[
-                            { value: 'all', label: '전체' },
-                            { value: 'easy', label: '쉬움' },
-                            { value: 'medium', label: '보통' },
-                            { value: 'hard', label: '어려움' }
-                        ].map(({ value, label }) => (
-                            <button
-                                key={value}
-                                className={`filter-btn ${filters.difficulty === value ? 'active' : ''}`}
-                                onClick={() => handleFilterChange('difficulty', value)}
-                            >
-                                {label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Advanced Filter Toggle */}
+                {/* Advanced Filter Toggle - Only Visible Element */}
                 <button
                     className="filter-advanced-toggle"
                     onClick={() => setShowAdvanced(!showAdvanced)}
                 >
-                    {showAdvanced ? '간단히 ▲' : '상세필터 ▼'}
+                    {showAdvanced ? '필터 접기 ▲' : '상세필터 ▼'}
+                </button>
+
+                {/* Reset Button */}
+                <button
+                    className="filter-btn reset-btn"
+                    onClick={handleReset}
+                >
+                    🔄 초기화
                 </button>
             </div>
 
             {/* Advanced Filters */}
             {showAdvanced && (
                 <div className="filter-advanced">
+                    {/* People Filter */}
+                    <div className="filter-group-advanced">
+                        <span className="filter-label-advanced">👥 인원</span>
+                        <div className="filter-buttons">
+                            {['all', '1-2', '3-4', '5+'].map(value => (
+                                <button
+                                    key={value}
+                                    className={`filter-btn ${filters.people === value ? 'active' : ''}`}
+                                    onClick={() => handleFilterChange('people', value)}
+                                >
+                                    {value === 'all' ? '전체' : value + '명'}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Time of Day Filter */}
+                    <div className="filter-group-advanced">
+                        <span className="filter-label-advanced">🕐 시간대</span>
+                        <div className="filter-buttons">
+                            {[
+                                { value: 'all', label: '전체' },
+                                { value: 'breakfast', label: '아침' },
+                                { value: 'lunch', label: '점심' },
+                                { value: 'dinner', label: '저녁' }
+                            ].map(({ value, label }) => (
+                                <button
+                                    key={value}
+                                    className={`filter-btn ${filters.timeOfDay === value ? 'active' : ''}`}
+                                    onClick={() => handleFilterChange('timeOfDay', value)}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Difficulty Filter */}
+                    <div className="filter-group-advanced">
+                        <span className="filter-label-advanced">⭐ 난이도</span>
+                        <div className="filter-buttons">
+                            {[
+                                { value: 'all', label: '전체' },
+                                { value: 'easy', label: '쉬움' },
+                                { value: 'medium', label: '보통' },
+                                { value: 'hard', label: '어려움' }
+                            ].map(({ value, label }) => (
+                                <button
+                                    key={value}
+                                    className={`filter-btn ${filters.difficulty === value ? 'active' : ''}`}
+                                    onClick={() => handleFilterChange('difficulty', value)}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                     {/* Allergies */}
                     <div className="filter-group-advanced">
                         <span className="filter-label-advanced">⚠️ 알레르기 제외</span>
