@@ -3,6 +3,7 @@ import Layout from './components/Layout';
 import Hero from './components/Hero';
 import FilterBar from './components/FilterBar';
 import MealGrid from './components/MealGrid';
+import MealSection from './components/MealSection';
 import CommunityFeed from './components/CommunityFeed';
 import RecommendationForm from './components/RecommendationForm';
 import RecommendationWizard from './components/RecommendationWizard';
@@ -12,6 +13,7 @@ import BottomNav from './components/BottomNav';
 import FloatingActionButton from './components/FloatingActionButton';
 import Favorites from './components/Favorites';
 import MealDetail from './components/MealDetail';
+import { meals } from './data/meals';
 
 function App() {
   const [filters, setFilters] = useState({
@@ -68,14 +70,22 @@ function App() {
   }, []);
 
   const toggleFavorite = (mealId) => {
-    setFavorites(prev => {
-      const newFavorites = prev.includes(mealId)
-        ? prev.filter(id => id !== mealId)
-        : [...prev, mealId];
+    const newFavorites = favorites.includes(mealId)
+      ? favorites.filter(id => id !== mealId)
+      : [...favorites, mealId];
+    setFavorites(newFavorites);
+    localStorage.setItem('favoriteMeals', JSON.stringify(newFavorites));
+  };
 
-      localStorage.setItem('camping_favorites', JSON.stringify(newFavorites));
-      return newFavorites;
+  // Helper function to get all meals from all categories
+  const getAllMeals = () => {
+    const allMeals = [];
+    Object.values(meals).forEach(categoryMeals => {
+      if (Array.isArray(categoryMeals)) {
+        allMeals.push(...categoryMeals);
+      }
     });
+    return allMeals;
   };
 
   const handleFilterChange = (newFilters) => {
@@ -139,15 +149,50 @@ function App() {
             onFilterChange={handleFilterChange}
           />
 
-          <MealGrid
-            filters={filters}
-            favorites={favorites}
-            onToggleFavorite={toggleFavorite}
-            onViewMeal={(meal) => {
-              setSelectedMeal(meal);
-              setIsMealDetailOpen(true);
-            }}
-          />
+          {/* Section-based Meal Display */}
+          <div className="home-sections">
+            {/* Popular This Week */}
+            <MealSection
+              title="🔥 이번주 인기 레시피"
+              meals={getAllMeals()
+                .filter(m => !m.isHidden && m.rating >= 4.5)
+                .sort((a, b) => b.rating - a.rating)}
+              layout="horizontal"
+              onViewMeal={(meal) => {
+                setSelectedMeal(meal);
+                setIsMealDetailOpen(true);
+              }}
+            />
+
+            {/* Beginner Recipes */}
+            <MealSection
+              title="👨‍🍳 초보자를 위한 레시피"
+              meals={getAllMeals()
+                .filter(m => !m.isHidden && m.difficulty === 'easy')
+                .slice(0, 5)}
+              layout="list"
+              onViewMeal={(meal) => {
+                setSelectedMeal(meal);
+                setIsMealDetailOpen(true);
+              }}
+            />
+
+            {/* Camping Favorites */}
+            <MealSection
+              title="🏕️ 캠핑 추천 메뉴"
+              meals={getAllMeals()
+                .filter(m => !m.isHidden && (
+                  m.tags?.includes('camping') ||
+                  m.tags?.includes('quick') ||
+                  m.tags?.includes('portable')
+                ))}
+              layout="grid"
+              onViewMeal={(meal) => {
+                setSelectedMeal(meal);
+                setIsMealDetailOpen(true);
+              }}
+            />
+          </div>
         </>
       )}
 
