@@ -679,13 +679,13 @@ span {
 
 /* Filter Bar - Dark Mode */
 .filter-bar-container {
-  border-bottom: 1px solid var(--color-card-border);
+  background: var(--color-bg-primary);
+  padding: 20px 0;
+  margin-top: 20px;
   position: sticky;
   top: 0;
-  background: var(--color-bg-secondary);
-  backdrop-filter: blur(10px);
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .filter-bar {
@@ -2798,6 +2798,7 @@ span {
   border-color: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
 }
+
 /* Scroll to Top Button */
 .scroll-to-top {
   position: fixed;

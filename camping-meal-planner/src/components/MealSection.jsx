@@ -1,21 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function MealSection({ title, meals, layout = 'horizontal', onViewMeal }) {
+    const [isExpanded, setIsExpanded] = useState(false);
+
     if (!meals || meals.length === 0) return null;
+
+    // Display limits per layout when not expanded
+    const displayLimit = layout === 'horizontal' ? 10 : layout === 'list' ? 5 : 6;
+    const displayMeals = isExpanded ? meals : meals.slice(0, displayLimit);
+    const hasMore = meals.length > displayLimit;
 
     return (
         <div className="meal-section">
             <div className="section-header">
                 <h2 className="section-title">{title}</h2>
-                {meals.length > 6 && (
-                    <button className="section-see-all">전체보기 →</button>
+                {hasMore && (
+                    <button
+                        className="section-see-all"
+                        onClick={() => setIsExpanded(!isExpanded)}
+                    >
+                        {isExpanded ? '접기 ↑' : `전체보기 →`}
+                    </button>
                 )}
             </div>
 
             <div className={`section-content ${layout}`}>
                 {layout === 'horizontal' ? (
                     <div className="horizontal-scroll">
-                        {meals.slice(0, 10).map((meal) => (
+                        {displayMeals.map((meal) => (
                             <div
                                 key={meal.id}
                                 className="meal-card-horizontal"
@@ -36,7 +48,7 @@ export default function MealSection({ title, meals, layout = 'horizontal', onVie
                     </div>
                 ) : layout === 'list' ? (
                     <div className="list-view">
-                        {meals.slice(0, 5).map((meal) => (
+                        {displayMeals.map((meal) => (
                             <div
                                 key={meal.id}
                                 className="meal-card-list"
@@ -56,7 +68,7 @@ export default function MealSection({ title, meals, layout = 'horizontal', onVie
                     </div>
                 ) : (
                     <div className="grid-view">
-                        {meals.slice(0, 6).map((meal) => (
+                        {displayMeals.map((meal) => (
                             <div
                                 key={meal.id}
                                 className="meal-card-grid"
