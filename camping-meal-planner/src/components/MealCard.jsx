@@ -2,7 +2,7 @@ import React from 'react';
 import Card from './Card';
 import { allergens as allergenLabels } from '../data/meals';
 
-const MealCard = ({ meal, onSwap, peopleCount }) => {
+const MealCard = ({ meal, onSwap, peopleCount, isFavorite, onToggleFavorite, onViewMeal }) => {
     const handleBuy = (platform) => {
         const baseUrl = platform === 'coupang'
             ? 'https://www.coupang.com/np/search?component=&q='
@@ -16,13 +16,44 @@ const MealCard = ({ meal, onSwap, peopleCount }) => {
     };
 
     return (
-        <div className="meal-card">
+        <div className="meal-card" onClick={onViewMeal} style={{ cursor: 'pointer' }}>
             {/* Image */}
             <div style={{ position: 'relative', overflow: 'hidden' }}>
                 <img
                     src={meal.image}
                     alt={meal.title}
                 />
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleFavorite && onToggleFavorite();
+                    }}
+                    style={{
+                        position: 'absolute',
+                        top: '12px',
+                        right: '12px',
+                        background: 'rgba(0, 0, 0, 0.5)',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '36px',
+                        height: '36px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        backdropFilter: 'blur(4px)',
+                        transition: 'all 0.2s ease'
+                    }}
+                >
+                    <span style={{
+                        fontSize: '20px',
+                        lineHeight: 1,
+                        color: isFavorite ? 'var(--color-accent-primary)' : 'rgba(255, 255, 255, 0.8)',
+                        filter: isFavorite ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : 'none'
+                    }}>
+                        {isFavorite ? '❤️' : '🤍'}
+                    </span>
+                </button>
             </div>
 
             <div style={{ padding: '20px' }}>
@@ -94,7 +125,7 @@ const MealCard = ({ meal, onSwap, peopleCount }) => {
                 )}
 
                 {/* Buy Buttons */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
                     <button
                         className="btn btn-primary"
                         onClick={() => handleBuy('coupang')}

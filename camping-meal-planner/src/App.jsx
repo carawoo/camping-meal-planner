@@ -7,6 +7,11 @@ import CommunityFeed from './components/CommunityFeed';
 import RecommendationForm from './components/RecommendationForm';
 import RecommendationWizard from './components/RecommendationWizard';
 import MealPlan from './components/MealPlan';
+import SavedPlans from './components/SavedPlans';
+import BottomNav from './components/BottomNav';
+import FloatingActionButton from './components/FloatingActionButton';
+import Favorites from './components/Favorites';
+import MealDetail from './components/MealDetail';
 
 function App() {
   const [filters, setFilters] = useState({
@@ -22,10 +27,15 @@ function App() {
   const [isRecommendationFormOpen, setIsRecommendationFormOpen] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isMealPlanOpen, setIsMealPlanOpen] = useState(false);
+  const [isSavedPlansOpen, setIsSavedPlansOpen] = useState(false);
   const [mealPlan, setMealPlan] = useState(null);
   const [savedPlans, setSavedPlans] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [activeTab, setActiveTab] = useState('home');
+  const [selectedMeal, setSelectedMeal] = useState(null);
+  const [isMealDetailOpen, setIsMealDetailOpen] = useState(false);
 
-  // Load saved plans from localStorage
+  // Load saved plans and favorites from localStorage
   useEffect(() => {
     const savedP = localStorage.getItem('camping_plans');
     if (savedP) {
@@ -35,7 +45,27 @@ function App() {
         console.error('Failed to load plans:', e);
       }
     }
+
+    const savedF = localStorage.getItem('camping_favorites');
+    if (savedF) {
+      try {
+        setFavorites(JSON.parse(savedF));
+      } catch (e) {
+        console.error('Failed to load favorites:', e);
+      }
+    }
   }, []);
+
+  const toggleFavorite = (mealId) => {
+    setFavorites(prev => {
+      const newFavorites = prev.includes(mealId)
+        ? prev.filter(id => id !== mealId)
+        : [...prev, mealId];
+
+      localStorage.setItem('camping_favorites', JSON.stringify(newFavorites));
+      return newFavorites;
+    });
+  };
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
@@ -78,24 +108,77 @@ function App() {
     setIsMealPlanOpen(true);
   };
 
+  const handleDeletePlan = (planId) => {
+    const updatedPlans = savedPlans.filter(p => p.id !== planId);
+    setSavedPlans(updatedPlans);
+    localStorage.setItem('camping_plans', JSON.stringify(updatedPlans));
+  };
+
   return (
     <Layout>
-      <Hero
-        onOpenCommunity={() => setIsCommunityFeedOpen(true)}
-        onOpenWizard={() => setIsWizardOpen(true)}
-      />
+      {activeTab === 'home' && (
+        <>
+          <Hero
+            onNavigateToCommunity={() => setActiveTab('community')}
+            onOpenWizard={() => setIsWizardOpen(true)}
+          />
 
-      <FilterBar onFilterChange={handleFilterChange} />
+          <FilterBar
+            filters={filters}
+            onFilterChange={handleFilterChange}
+          />
 
-      <MealGrid
-        filters={filters}
-      />
+          <MealGrid
+            filters={filters}
+            favorites={favorites}
+            onToggleFavorite={toggleFavorite}
+            onViewMeal={(meal) => {
+              setSelectedMeal(meal);
+              setIsMealDetailOpen(true);
+            }}
+          />
+        </>
+      )}
 
-      <CommunityFeed
-        isOpen={isCommunityFeedOpen}
-        onClose={() => setIsCommunityFeedOpen(false)}
-        onOpenForm={() => setIsRecommendationFormOpen(true)}
-      />
+      {activeTab === 'plans' && (
+        <div className="tab-content">
+          <SavedPlans
+            isOpen={true}
+            onClose={() => setActiveTab('home')}
+            savedPlans={savedPlans}
+            onDeletePlan={handleDeletePlan}
+            inlineMode={true}
+            onOpenWizard={() => setIsWizardOpen(true)}
+          />
+        </div>
+      )}
+
+      {activeTab === 'community' && (
+        <div className="tab-content">
+          <CommunityFeed
+            isOpen={true}
+            onClose={() => setActiveTab('home')}
+            onOpenForm={() => setIsRecommendationFormOpen(true)}
+            isModal={false}
+          />
+        </div>
+      )}
+
+      {activeTab === 'favorites' && (
+        <div className="tab-content">
+          <Favorites
+            favorites={favorites}
+            onToggleFavorite={toggleFavorite}
+            onNavigateHome={() => setActiveTab('home')}
+          />
+        </div>
+      )}
+
+      {activeTab === 'recipes' && (
+        <div className="tab-content">
+          <h2 style={{ padding: '60px 24px', textAlign: 'center' }}>내 레시피 (개발 예정)</h2>
+        </div>
+      )}
 
       <RecommendationForm
         isOpen={isRecommendationFormOpen}
@@ -116,10 +199,60 @@ function App() {
         onSave={handleSavePlan}
       />
 
+      {!isSavedPlansOpen && activeTab !== 'plans' && (
+        <SavedPlans
+          isOpen={isSavedPlansOpen}
+          onClose={() => setIsSavedPlansOpen(false)}
+          savedPlans={savedPlans}
+          onDeletePlan={handleDeletePlan}
+        />
+      )}
+
+      <BottomNav
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
+
+      {/* Floating Action Buttons */}
+      {!isWizardOpen && !isRecommendationFormOpen && !isMealPlanOpen && !isSavedPlansOpen && !isMealDetailOpen && (
+        <div style={{
+          position: 'fixed',
+          bottom: '90px',
+          right: '20px',
+          zIndex: 9999
+        }}>
+          {activeTab === 'home' && (
+            <FloatingActionButton
+              icon="✨"
+              label="맞춤 추천"
+              onClick={() => setIsWizardOpen(true)}
+            />
+          )}
+
+          {activeTab === 'community' && (
+            <FloatingActionButton
+              icon="✏️"
+              label="글 쓰기"
+              onClick={() => setIsRecommendationFormOpen(true)}
+              color="primary"
+            />
+          )}
+        </div>
+      )}
+
       <footer className="footer">
-        <p>© 2024 Camping Meal Planner</p>
-        <p>더 즐거운 캠핑을 위하여</p>
       </footer>
+
+      {/* Meal Detail Modal */}
+      {isMealDetailOpen && selectedMeal && (
+        <MealDetail
+          meal={selectedMeal}
+          onClose={() => {
+            setIsMealDetailOpen(false);
+            setSelectedMeal(null);
+          }}
+        />
+      )}
     </Layout>
   );
 }

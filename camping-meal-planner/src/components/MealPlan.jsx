@@ -1,4 +1,25 @@
+import { useState, useEffect } from 'react';
+
 export default function MealPlan({ isOpen, onClose, plan, onSave }) {
+    const [isSaved, setIsSaved] = useState(false);
+
+    // Check if this plan is already saved
+    useEffect(() => {
+        if (!plan) return;
+
+        const savedPlans = localStorage.getItem('camping_plans');
+        if (savedPlans) {
+            const plans = JSON.parse(savedPlans);
+            // Check if a similar plan exists (same duration, style, and schedule length)
+            const exists = plans.some(p =>
+                p.duration === plan.duration &&
+                p.style === plan.style &&
+                p.schedule.length === plan.schedule.length
+            );
+            setIsSaved(exists);
+        }
+    }, [plan]);
+
     if (!isOpen) return null;
 
     const getMealTime = (mealType) => {
@@ -40,6 +61,19 @@ export default function MealPlan({ isOpen, onClose, plan, onSave }) {
 
         const query = meal.searchQuery || meal.title;
         window.open(`${baseUrl}${encodeURIComponent(query)}`, '_blank');
+    };
+
+    const handleSave = () => {
+        if (isSaved) {
+            alert('이미 저장된 식단 계획입니다!');
+            return;
+        }
+
+        const name = prompt('식단표 이름을 입력해주세요:', `${plan.duration} ${plan.style} 식단`);
+        if (name) {
+            onSave(name, plan);
+            setIsSaved(true);
+        }
     };
 
     return (
@@ -100,13 +134,13 @@ export default function MealPlan({ isOpen, onClose, plan, onSave }) {
                                                             </div>
                                                             <div className="timeline-meal-actions">
                                                                 <button
-                                                                    className="btn-timeline-buy coupang"
+                                                                    className="btn-timeline-buy btn-outline"
                                                                     onClick={() => handleBuy(meal.item, 'coupang')}
                                                                 >
                                                                     🚀 쿠팡 검색
                                                                 </button>
                                                                 <button
-                                                                    className="btn-timeline-buy naver"
+                                                                    className="btn-timeline-buy btn-outline"
                                                                     onClick={() => handleBuy(meal.item, 'naver')}
                                                                 >
                                                                     💚 네이버 검색
@@ -123,13 +157,13 @@ export default function MealPlan({ isOpen, onClose, plan, onSave }) {
                                                                 </div>
                                                                 <div className="timeline-meal-actions">
                                                                     <button
-                                                                        className="btn-timeline-buy coupang"
+                                                                        className="btn-timeline-buy btn-outline"
                                                                         onClick={() => handleBuy(meal.item, 'coupang')}
                                                                     >
                                                                         🚀 쿠팡 구매
                                                                     </button>
                                                                     <button
-                                                                        className="btn-timeline-buy naver"
+                                                                        className="btn-timeline-buy btn-outline"
                                                                         onClick={() => handleBuy(meal.item, 'naver')}
                                                                     >
                                                                         💚 네이버 최저가
@@ -153,15 +187,10 @@ export default function MealPlan({ isOpen, onClose, plan, onSave }) {
                         닫기
                     </button>
                     <button
-                        className="btn btn-primary"
-                        onClick={() => {
-                            const name = prompt('식단표 이름을 입력해주세요:', `${plan.duration} ${plan.style} 식단`);
-                            if (name) {
-                                onSave(name, plan);
-                            }
-                        }}
+                        className={`btn ${isSaved ? 'btn-secondary' : 'btn-primary'}`}
+                        onClick={handleSave}
                     >
-                        계획 저장
+                        {isSaved ? '✓ 저장됨' : '계획 저장'}
                     </button>
                 </div>
             </div>

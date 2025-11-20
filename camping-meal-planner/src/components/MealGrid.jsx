@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import MealCard from './MealCard';
 import { meals } from '../data/meals';
 
-export default function MealGrid({ filters }) {
+export default function MealGrid({ filters, favorites, onToggleFavorite, onViewMeal }) {
     // Combine all meals into one array
     const allMeals = useMemo(() => {
         return [...meals.arrival, ...meals.dinner, ...meals.breakfast];
@@ -73,6 +73,9 @@ export default function MealGrid({ filters }) {
                     <MealCard
                         key={meal.id}
                         meal={meal}
+                        isFavorite={favorites.includes(meal.id)}
+                        onToggleFavorite={() => onToggleFavorite(meal.id)}
+                        onViewMeal={() => onViewMeal(meal)}
                     />
                 ))}
             </div>

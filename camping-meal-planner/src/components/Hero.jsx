@@ -1,22 +1,37 @@
 import React, { useState, useEffect } from 'react';
+import { mockRecommendations } from '../data/communityData';
 
-export default function Hero({ onOpenCommunity, onOpenWizard }) {
+export default function Hero({ onNavigateToCommunity, onOpenWizard }) {
     const [currentKeyword, setCurrentKeyword] = useState(0);
+    const [keywords, setKeywords] = useState([]);
 
-    const keywords = [
-        '떡볶이 + 라면 조합',
-        '삼겹살 + 소주 세트',
-        '캠핑 카레 + 빵',
-        '치킨 + 맥주 파티',
-        '일본식 카레 + 밥'
-    ];
+    // Load community recommendations and populate keywords
+    useEffect(() => {
+        // Load user recommendations from localStorage
+        const saved = localStorage.getItem('camping_recommendations');
+        const userRecs = saved ? JSON.parse(saved) : [];
+
+        // Combine mock and user recs, sort by likes (most popular first)
+        const allRecs = [...userRecs, ...mockRecommendations]
+            .sort((a, b) => b.likes - a.likes)
+            .slice(0, 5); // Top 5
+
+        // Extract titles for the rolling keywords
+        const titles = allRecs.length > 0
+            ? allRecs.map(rec => rec.title)
+            : ['캠핑 카레 + 빵', '삼겹살 세트', '치킨 + 맥주'];
+
+        setKeywords(titles);
+    }, []);
 
     useEffect(() => {
+        if (keywords.length === 0) return;
+
         const interval = setInterval(() => {
             setCurrentKeyword((prev) => (prev + 1) % keywords.length);
         }, 3000);
         return () => clearInterval(interval);
-    }, []);
+    }, [keywords.length]);
 
     return (
         <section className="hero">
@@ -38,7 +53,7 @@ export default function Hero({ onOpenCommunity, onOpenWizard }) {
                     {/* Rolling Keywords - Click to open community */}
                     <div
                         className="hero-search-box"
-                        onClick={onOpenCommunity}
+                        onClick={onNavigateToCommunity}
                         style={{ cursor: 'pointer' }}
                     >
                         <div className="search-icon">🔍</div>
@@ -54,19 +69,6 @@ export default function Hero({ onOpenCommunity, onOpenWizard }) {
                         </div>
                     </div>
 
-                    {/* Buttons */}
-                    <button
-                        onClick={onOpenWizard}
-                        className="hero-btn hero-btn-primary"
-                    >
-                        🎯 맞춤 추천
-                    </button>
-                    <button
-                        onClick={onOpenCommunity}
-                        className="hero-btn hero-btn-secondary"
-                    >
-                        💬 커뮤니티
-                    </button>
                 </div>
             </div>
         </section>
