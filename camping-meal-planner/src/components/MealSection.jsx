@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function MealSection({ title, meals, layout = 'horizontal', onViewMeal }) {
+export default function MealSection({ title, meals, layout = 'horizontal', onViewMeal, onSeeAll }) {
     const [isExpanded, setIsExpanded] = useState(false);
 
     if (!meals || meals.length === 0) return null;
@@ -14,12 +14,12 @@ export default function MealSection({ title, meals, layout = 'horizontal', onVie
         <div className="meal-section">
             <div className="section-header">
                 <h2 className="section-title">{title}</h2>
-                {hasMore && (
+                {hasMore && onSeeAll && (
                     <button
                         className="section-see-all"
-                        onClick={() => setIsExpanded(!isExpanded)}
+                        onClick={onSeeAll}
                     >
-                        {isExpanded ? '접기 ↑' : `전체보기 →`}
+                        전체보기 →
                     </button>
                 )}
             </div>

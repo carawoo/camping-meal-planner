@@ -4,6 +4,7 @@ import Hero from './components/Hero';
 import FilterBar from './components/FilterBar';
 import MealGrid from './components/MealGrid';
 import MealSection from './components/MealSection';
+import Rankings from './components/Rankings';
 import CommunityFeed from './components/CommunityFeed';
 import RecommendationForm from './components/RecommendationForm';
 import RecommendationWizard from './components/RecommendationWizard';
@@ -25,6 +26,8 @@ function App() {
     maxSpicy: 1
   });
 
+  const [activeTab, setActiveTab] = useState('home'); // home, rankings, saved, community, favorites
+  const [favorites, setFavorites] = useState([]);
   const [isCommunityFeedOpen, setIsCommunityFeedOpen] = useState(false);
   const [isRecommendationFormOpen, setIsRecommendationFormOpen] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
@@ -32,8 +35,7 @@ function App() {
   const [isSavedPlansOpen, setIsSavedPlansOpen] = useState(false);
   const [mealPlan, setMealPlan] = useState(null);
   const [savedPlans, setSavedPlans] = useState([]);
-  const [favorites, setFavorites] = useState([]);
-  const [activeTab, setActiveTab] = useState('home');
+
   const [selectedMeal, setSelectedMeal] = useState(null);
   const [isMealDetailOpen, setIsMealDetailOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -86,6 +88,13 @@ function App() {
       }
     });
     return allMeals;
+  };
+
+  // Track meal clicks
+  const trackMealClick = (mealId) => {
+    const clicks = JSON.parse(localStorage.getItem('meal_clicks') || '{}');
+    clicks[mealId] = (clicks[mealId] || 0) + 1;
+    localStorage.setItem('meal_clicks', JSON.stringify(clicks));
   };
 
   const handleFilterChange = (newFilters) => {
@@ -159,9 +168,11 @@ function App() {
                 .sort((a, b) => b.rating - a.rating)}
               layout="horizontal"
               onViewMeal={(meal) => {
+                trackMealClick(meal.id);
                 setSelectedMeal(meal);
                 setIsMealDetailOpen(true);
               }}
+              onSeeAll={() => setActiveTab('rankings')}
             />
 
             {/* Beginner Recipes */}
@@ -172,6 +183,7 @@ function App() {
                 .slice(0, 5)}
               layout="list"
               onViewMeal={(meal) => {
+                trackMealClick(meal.id);
                 setSelectedMeal(meal);
                 setIsMealDetailOpen(true);
               }}
@@ -188,12 +200,23 @@ function App() {
                 ))}
               layout="grid"
               onViewMeal={(meal) => {
+                trackMealClick(meal.id);
                 setSelectedMeal(meal);
                 setIsMealDetailOpen(true);
               }}
             />
           </div>
         </>
+      )}
+
+      {activeTab === 'rankings' && (
+        <Rankings
+          onViewMeal={(meal) => {
+            trackMealClick(meal.id);
+            setSelectedMeal(meal);
+            setIsMealDetailOpen(true);
+          }}
+        />
       )}
 
       {activeTab === 'plans' && (
