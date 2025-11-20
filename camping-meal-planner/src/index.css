@@ -2798,3 +2798,48 @@ span {
   border-color: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
 }
+/* Scroll to Top Button */
+.scroll-to-top {
+  position: fixed;
+  left: 20px;
+  bottom: 90px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-bg-elevated);
+  border: 2px solid var(--color-card-border);
+  color: var(--color-text-primary);
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scroll-to-top:hover {
+  background: var(--color-accent-primary);
+  color: white;
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(255, 87, 34, 0.4);
+}
+
+.scroll-to-top:active {
+  transform: translateY(-2px);
+}
+
+/* Reset button styling */
+.filter-btn.reset-btn {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-card-border);
+}
+
+.filter-btn.reset-btn:hover {
+  background: var(--color-accent-primary);
+  color: white;
+  border-color: var(--color-accent-primary);
+}

@@ -20,7 +20,7 @@ function App() {
     difficulty: 'all',
     allergies: [],
     dietary: [],
-    maxSpicy: 5
+    maxSpicy: 1
   });
 
   const [isCommunityFeedOpen, setIsCommunityFeedOpen] = useState(false);
@@ -34,6 +34,17 @@ function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [selectedMeal, setSelectedMeal] = useState(null);
   const [isMealDetailOpen, setIsMealDetailOpen] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // Detect scroll position for scroll-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Load saved plans and favorites from localStorage
   useEffect(() => {
@@ -252,6 +263,17 @@ function App() {
             setSelectedMeal(null);
           }}
         />
+      )}
+
+      {/* Scroll to Top Button */}
+      {showScrollTop && !isWizardOpen && !isRecommendationFormOpen && !isMealPlanOpen && !isSavedPlansOpen && !isMealDetailOpen && !isCommunityFeedOpen && (
+        <button
+          className="scroll-to-top"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="맨 위로 가기"
+        >
+          ↑
+        </button>
       )}
     </Layout>
   );

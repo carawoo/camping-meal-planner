@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react';
 
 export default function MealPlan({ isOpen, onClose, plan, onSave }) {
     const [isSaved, setIsSaved] = useState(false);
+    const [localPlan, setLocalPlan] = useState(plan);
 
     // Check if this plan is already saved
     useEffect(() => {
         if (!plan) return;
+
+        setLocalPlan(plan); // Update local plan when prop changes
 
         const savedPlans = localStorage.getItem('camping_plans');
         if (savedPlans) {
@@ -61,6 +64,49 @@ export default function MealPlan({ isOpen, onClose, plan, onSave }) {
 
         const query = meal.searchQuery || meal.title;
         window.open(`${baseUrl}${encodeURIComponent(query)}`, '_blank');
+    };
+
+    const regenerateMeal = (dayIndex, mealIndex) => {
+        // Get all meals for this time slot
+        const mealType = localPlan.schedule[dayIndex].meals[mealIndex].type; // Use 'type' from existing plan
+        const allMealsForType = meals[mealType]; // Assuming meals object is structured by type (breakfast, lunch, dinner)
+
+        if (!allMealsForType) {
+            console.warn(`No meals found for type: ${mealType}`);
+            return;
+        }
+
+        // Filter out current meal and get a random new one
+        const currentMealId = localPlan.schedule[dayIndex].meals[mealIndex].item.id;
+        const availableMeals = allMealsForType.filter(m => !m.isHidden && m.id !== currentMealId);
+
+        if (availableMeals.length > 0) {
+            const newMeal = availableMeals[Math.floor(Math.random() * availableMeals.length)];
+            const newPlan = { ...localPlan };
+            newPlan.schedule[dayIndex].meals[mealIndex].item = newMeal;
+            setLocalPlan(newPlan);
+            setIsSaved(false); // Mark as unsaved after regeneration
+        } else {
+            alert('더 이상 다른 메뉴가 없습니다!');
+        }
+    };
+
+    const regenerateDay = (dayIndex) => {
+        const newPlan = { ...localPlan };
+        newPlan.schedule[dayIndex].meals.forEach((meal, mealIndex) => {
+            const mealType = meal.type;
+            const allMealsForType = meals[mealType];
+
+            if (allMealsForType && allMealsForType.length > 0) {
+                const availableMeals = allMealsForType.filter(m => !m.isHidden);
+                if (availableMeals.length > 0) {
+                    const newMeal = availableMeals[Math.floor(Math.random() * availableMeals.length)];
+                    newPlan.schedule[dayIndex].meals[mealIndex].item = newMeal;
+                }
+            }
+        });
+        setLocalPlan(newPlan);
+        setIsSaved(false); // Mark as unsaved after regeneration
     };
 
     const handleSave = () => {
