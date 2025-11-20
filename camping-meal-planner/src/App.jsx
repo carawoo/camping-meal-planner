@@ -153,7 +153,7 @@ function App() {
           <div className="home-sections">
             {/* Popular This Week */}
             <MealSection
-              title="🔥 이번주 인기 레시피"
+              title="🔥 이번주 인기 메뉴"
               meals={getAllMeals()
                 .filter(m => !m.isHidden && m.rating >= 4.5)
                 .sort((a, b) => b.rating - a.rating)}
@@ -166,7 +166,7 @@ function App() {
 
             {/* Beginner Recipes */}
             <MealSection
-              title="👨‍🍳 초보자를 위한 레시피"
+              title="👨‍🍳 초보자도 쉬운 메뉴"
               meals={getAllMeals()
                 .filter(m => !m.isHidden && m.difficulty === 'easy')
                 .slice(0, 5)}
