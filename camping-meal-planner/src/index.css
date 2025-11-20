@@ -2897,3 +2897,129 @@ span {
   color: white;
   border-color: var(--color-accent-secondary);
 }
+
+/* Review Form Styles */
+.btn-write-review {
+  background: var(--color-accent-primary);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-write-review:hover {
+  background: var(--color-accent-secondary);
+  transform: translateY(-2px);
+}
+
+.review-form {
+  background: var(--color-bg-secondary);
+  padding: 20px;
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+  border: 1px solid var(--color-card-border);
+}
+
+.form-row {
+  margin-bottom: 16px;
+}
+
+.form-row label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-accent-primary);
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-accent-primary);
+}
+
+.rating-input {
+  display: flex;
+  gap: 4px;
+}
+
+.rating-input .star {
+  font-size: 24px;
+  cursor: pointer;
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.rating-input .star.active {
+  opacity: 1;
+}
+
+.rating-input .star:hover {
+  opacity: 0.8;
+}
+
+.emoji-picker {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.emoji-option {
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  opacity: 0.5;
+}
+
+.emoji-option.active {
+  opacity: 1;
+  background: rgba(255, 87, 34, 0.2);
+}
+
+.emoji-option:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.empty-reviews {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-text-secondary);
+}
+
+.empty-reviews p {
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+}

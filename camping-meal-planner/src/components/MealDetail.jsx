@@ -1,6 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-export default function MealDetail({ meal, onClose, onBuy }) {
+export default function MealDetail({ meal, onClose }) {
+    const [userReviews, setUserReviews] = useState([]);
+    const [showReviewForm, setShowReviewForm] = useState(false);
+    const [newReview, setNewReview] = useState({
+        author: '',
+        rating: 5,
+        comment: '',
+        emoji: '😊'
+    });
+
+    // Load user reviews from localStorage
+    useEffect(() => {
+        const savedReviews = localStorage.getItem(`reviews_${meal.id}`);
+        if (savedReviews) {
+            setUserReviews(JSON.parse(savedReviews));
+        }
+    }, [meal.id]);
+
+    const handleSubmitReview = (e) => {
+        e.preventDefault();
+
+        const review = {
+            ...newReview,
+            author: newReview.author.trim() || '익명',
+            date: '방금 전'
+        };
+
+        const updatedReviews = [review, ...userReviews];
+        setUserReviews(updatedReviews);
+        localStorage.setItem(`reviews_${meal.id}`, JSON.stringify(updatedReviews));
+
+        // Reset form
+        setNewReview({
+            author: '',
+            rating: 5,
+            comment: '',
+            emoji: '😊'
+        });
+        setShowReviewForm(false);
+    };
+
+    const allReviews = [...userReviews, ...(meal.reviews || [])];
+
     if (!meal) return null;
 
     const handleBuy = (platform) => {
@@ -90,27 +132,111 @@ export default function MealDetail({ meal, onClose, onBuy }) {
                                 </div>
                             )}
 
-                            {/* Reviews */}
-                            {meal.reviews && (
+                            {/* Reviews Section */}
+                            {allReviews.length > 0 && (
                                 <div className="meal-detail-section">
-                                    <h3 className="section-title">사용자 리뷰 ({meal.reviews.length})</h3>
-                                    <div className="review-list">
-                                        {meal.reviews.map((review, idx) => (
-                                            <div key={idx} className="review-item">
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                                        <h3>사용자 리뷰 ({allReviews.length})</h3>
+                                        <button
+                                            className="btn-write-review"
+                                            onClick={() => setShowReviewForm(!showReviewForm)}
+                                        >
+                                            {showReviewForm ? '취소' : '✍️ 리뷰 작성'}
+                                        </button>
+                                    </div>
+
+                                    {/* Review Form */}
+                                    {showReviewForm && (
+                                        <form className="review-form" onSubmit={handleSubmitReview}>
+                                            <div className="form-row">
+                                                <input
+                                                    type="text"
+                                                    placeholder="닉네임 (선택사항, 미입력 시 익명)"
+                                                    value={newReview.author}
+                                                    onChange={(e) => setNewReview({ ...newReview, author: e.target.value })}
+                                                    className="form-input"
+                                                    maxLength={20}
+                                                />
+                                            </div>
+                                            <div className="form-row">
+                                                <label>평점:</label>
+                                                <div className="rating-input">
+                                                    {[1, 2, 3, 4, 5].map(star => (
+                                                        <span
+                                                            key={star}
+                                                            className={`star ${star <= newReview.rating ? 'active' : ''}`}
+                                                            onClick={() => setNewReview({ ...newReview, rating: star })}
+                                                        >
+                                                            ⭐
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="form-row">
+                                                <label>이모지:</label>
+                                                <div className="emoji-picker">
+                                                    {['😊', '🤤', '👍', '❤️', '🔥', '💯', '🏕️', '👨‍🍳'].map(emoji => (
+                                                        <span
+                                                            key={emoji}
+                                                            className={`emoji-option ${newReview.emoji === emoji ? 'active' : ''}`}
+                                                            onClick={() => setNewReview({ ...newReview, emoji })}
+                                                        >
+                                                            {emoji}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="form-row">
+                                                <textarea
+                                                    placeholder="캠핑에서 이 메뉴를 해먹은 후기를 남겨주세요!"
+                                                    value={newReview.comment}
+                                                    onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                                                    className="form-textarea"
+                                                    maxLength={200}
+                                                    required
+                                                />
+                                            </div>
+                                            <button type="submit" className="btn btn-primary">
+                                                리뷰 등록
+                                            </button>
+                                        </form>
+                                    )}
+
+                                    {/* Reviews List */}
+                                    <div className="reviews-list">
+                                        {allReviews.map((review, index) => (
+                                            <div key={index} className="review-item">
                                                 <div className="review-header">
                                                     <div className="review-author">
                                                         <span className="author-emoji">{review.emoji}</span>
                                                         <span className="author-name">{review.author}</span>
                                                     </div>
-                                                    <span className="review-date">{review.date}</span>
-                                                </div>
-                                                <div className="review-rating">
-                                                    {renderStars(review.rating)}
-                                                    <span className="rating-number">{review.rating.toFixed(1)}</span>
+                                                    <div className="review-meta">
+                                                        <span className="review-rating">
+                                                            {'⭐'.repeat(review.rating)} {review.rating}.0
+                                                        </span>
+                                                        <span className="review-date">{review.date}</span>
+                                                    </div>
                                                 </div>
                                                 <p className="review-comment">{review.comment}</p>
                                             </div>
                                         ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Empty State for Reviews */}
+                            {allReviews.length === 0 && (
+                                <div className="meal-detail-section">
+                                    <h3>사용자 리뷰</h3>
+                                    <div className="empty-reviews">
+                                        <p>아직 리뷰가 없습니다.</p>
+                                        <button
+                                            className="btn btn-outline"
+                                            onClick={() => setShowReviewForm(true)}
+                                        >
+                                            ✍️ 첫 리뷰 작성하기
+                                        </button>
                                     </div>
                                 </div>
                             )}
