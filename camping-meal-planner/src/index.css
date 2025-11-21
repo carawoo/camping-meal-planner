@@ -596,7 +596,7 @@ span {
 .meal-timeline {
   max-width: 800px;
   margin: 0 auto;
-  padding: 60px 24px;
+  padding: 0;
 }
 
 .timeline-title {
@@ -1356,7 +1356,7 @@ span {
 .plan-summary {
   display: flex;
   gap: 16px;
-  padding: 20px;
+  padding: 0;
   background: var(--color-surface-warm);
   border-radius: var(--radius-md);
   margin-bottom: 24px;
@@ -1417,6 +1417,7 @@ span {
 .day-meals {
   position: relative;
   padding-left: 30px;
+  padding-top: 16px;
 }
 
 /* Timeline Meal */
@@ -1490,19 +1491,30 @@ span {
   flex-direction: column;
   gap: 12px;
   padding: 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-card-border);
 }
 
 .timeline-meal-image {
   width: 100%;
-  height: 200px;
-  object-fit: cover;
+  height: 120px;
   border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.timeline-meal-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .timeline-meal-info {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex: 1;
+  min-width: 0;
 }
 
 .timeline-meal-title {
@@ -1608,6 +1620,37 @@ span {
   transform: scale(1.1);
 }
 
+.plan-edit-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: var(--transition);
+  padding: 4px;
+}
+
+.plan-edit-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.plan-name-input {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text);
+  background: var(--color-bg-tertiary);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  outline: none;
+}
+
+.plan-name-input:focus {
+  border-color: var(--color-primary-dark);
+}
+
 .plan-meta {
   margin-bottom: 16px;
   padding-bottom: 12px;
@@ -1631,7 +1674,7 @@ span {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: #fafafa;
+  background: var(--color-bg-tertiary);
   border-radius: var(--radius-sm);
 }
 
@@ -1661,7 +1704,7 @@ span {
 }
 
 .plan-expand-btn:hover {
-  background: #fafafa;
+  background: var(--color-card-bg-hover);
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
@@ -1693,7 +1736,7 @@ span {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: #f9fafb;
+  background: var(--color-bg-tertiary);
   border-radius: var(--radius-sm);
   margin-bottom: 6px;
 }
@@ -1702,16 +1745,18 @@ span {
   margin-bottom: 0;
 }
 
-.meal-time {
-  font-size: 0.8125rem;
+.plan-meal-item .meal-time {
+  font-size: 0.875rem;
   color: var(--color-text-secondary);
   font-weight: 500;
+  margin-left: 0;
 }
 
-.meal-name {
+.plan-meal-item .meal-name {
   font-size: 0.875rem;
   color: var(--color-text);
   font-weight: 600;
+  text-align: right;
 }
 
 @keyframes slideDown {
@@ -3069,7 +3114,7 @@ span {
   gap: 16px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 20px 16px;
+  margin: 0 20px 16px;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -3363,76 +3408,222 @@ span {
   font-size: 0.9rem;
 }
 
+/* Season info card */
+.season-info-card {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.season-info-item {
+  flex: 1;
+}
+
+.season-info-right {
+  text-align: right;
+}
+
+.season-info-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--color-card-border);
+  opacity: 0.5;
+}
+
+.season-info-label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.season-info-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-accent-primary);
+}
+
 .rankings-list {
   padding: 0 20px;
 }
 
-.ranking-item {
+.rankings-list .ranking-item {
+  position: relative;
   display: flex;
   align-items: center;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--color-card-border);
+  padding: 14px 12px;
+  margin-bottom: 12px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  border: 1px solid var(--color-card-border);
+  opacity: 1;
+  pointer-events: auto;
+  overflow: hidden;
 }
 
-.ranking-item:hover {
-  background-color: var(--color-bg-secondary);
+.rankings-list .ranking-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary);
 }
 
-.ranking-badge {
-  width: 40px;
-  font-size: 1.2rem;
+.rankings-list .ranking-badge {
+  width: 36px;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--color-accent-primary);
   text-align: center;
-  margin-right: 12px;
-}
-
-.ranking-image {
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-right: 16px;
+  margin-right: 10px;
   flex-shrink: 0;
 }
 
-.ranking-image img {
+.rankings-list .ranking-image {
+  width: 70px;
+  height: 70px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-right: 12px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.rankings-list .ranking-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.ranking-info {
+.rankings-list .ranking-info {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.ranking-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 4px;
+.rankings-list .ranking-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin-bottom: 6px;
   color: var(--color-text-primary);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.ranking-meta {
+.rankings-list .ranking-meta {
   display: flex;
   gap: 8px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--color-text-secondary);
-  margin-bottom: 4px;
+  margin-bottom: 5px;
+  flex-wrap: wrap;
 }
 
-.ranking-stats {
+.rankings-list .ranking-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.rankings-list .ranking-stats {
   font-size: 0.75rem;
   color: var(--color-accent-primary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.ranking-arrow {
+.rankings-list .click-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rankings-list .ranking-arrow {
   color: var(--color-text-tertiary);
   font-size: 1.2rem;
   margin-left: 12px;
+  flex-shrink: 0;
+}
+
+/* Top 3 ranking items - dark mode styling */
+.rankings-list .ranking-item-top {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 152, 0, 0.1) 100%);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.rankings-list .ranking-item-top:hover {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 152, 0, 0.15) 100%);
+  border-color: rgba(255, 193, 7, 0.5);
+}
+
+.rankings-list .ranking-badge-top {
+  font-size: 2rem;
+}
+
+/* Rank change badge */
+.rankings-list .rank-change {
+  position: absolute;
+  top: 8px;
+  left: 52px;
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rankings-list .rank-change-up {
+  background: rgba(0, 184, 148, 0.9);
+  color: white;
+}
+
+.rankings-list .rank-change-down {
+  background: rgba(214, 48, 49, 0.9);
+  color: white;
+}
+
+.rankings-list .rank-change-new {
+  background: rgba(108, 92, 231, 0.9);
+  color: white;
+}
+
+.rankings-list .rank-change-same {
+  background: rgba(99, 110, 114, 0.7);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Achievement badges */
+.rankings-list .achievement-badges {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.rankings-list .achievement-badge {
+  font-size: 0.7rem;
+  padding: 3px 7px;
+  border-radius: 8px;
+  background: rgba(255, 118, 117, 0.85);
+  color: white;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Click count styling */
+.rankings-list .click-count {
+  font-weight: 700;
+  color: var(--color-accent-primary);
+  font-size: 0.8125rem;
 }
 
 .empty-rankings {

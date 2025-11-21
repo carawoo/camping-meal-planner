@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import ShoppingList from './ShoppingList';
 
-export default function SavedPlans({ isOpen, onClose, savedPlans, onDeletePlan, inlineMode = false, onOpenWizard }) {
+export default function SavedPlans({ isOpen, onClose, savedPlans, onDeletePlan, onRenamePlan, inlineMode = false, onOpenWizard }) {
     const [expandedPlan, setExpandedPlan] = useState(null);
     const [activeView, setActiveView] = useState('plans'); // 'plans' or 'shopping'
     const [selectedPlan, setSelectedPlan] = useState(null);
+    const [editingPlanId, setEditingPlanId] = useState(null);
+    const [editingName, setEditingName] = useState('');
 
     if (!isOpen && !inlineMode) return null;
 
@@ -51,6 +53,24 @@ export default function SavedPlans({ isOpen, onClose, savedPlans, onDeletePlan, 
             'dinner': '저녁'
         };
         return map[mealType] || mealType;
+    };
+
+    const handleStartEdit = (plan) => {
+        setEditingPlanId(plan.id);
+        setEditingName(plan.name);
+    };
+
+    const handleSaveEdit = (planId) => {
+        if (editingName.trim() && onRenamePlan) {
+            onRenamePlan(planId, editingName.trim());
+        }
+        setEditingPlanId(null);
+        setEditingName('');
+    };
+
+    const handleCancelEdit = () => {
+        setEditingPlanId(null);
+        setEditingName('');
     };
 
     // Get first plan for shopping list
@@ -130,21 +150,59 @@ export default function SavedPlans({ isOpen, onClose, savedPlans, onDeletePlan, 
                     </div>
                 ) : (
                     <div className="saved-plans-grid">
-                        {savedPlans.map(plan => (
+                        {savedPlans.filter(plan => typeof plan.name === 'string').map(plan => (
                             <div key={plan.id} className="saved-plan-card">
                                 <div className="plan-header">
-                                    <h3 className="plan-name">{plan.name}</h3>
-                                    <button
-                                        className="plan-delete-btn"
-                                        onClick={() => {
-                                            if (window.confirm(`"${plan.name}" 플랜을 삭제하시겠습니까 ? `)) {
-                                                onDeletePlan(plan.id);
-                                            }
-                                        }}
-                                        title="삭제"
-                                    >
-                                        🗑️
-                                    </button>
+                                    {editingPlanId === plan.id ? (
+                                        <>
+                                            <input
+                                                type="text"
+                                                className="plan-name-input"
+                                                value={editingName}
+                                                onChange={(e) => setEditingName(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handleSaveEdit(plan.id);
+                                                    } else if (e.key === 'Escape') {
+                                                        handleCancelEdit();
+                                                    }
+                                                }}
+                                                onBlur={() => handleSaveEdit(plan.id)}
+                                                autoFocus
+                                            />
+                                            <button
+                                                className="plan-edit-btn"
+                                                onClick={() => handleSaveEdit(plan.id)}
+                                                title="저장"
+                                            >
+                                                ✓
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <h3 className="plan-name">{plan.name}</h3>
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button
+                                                    className="plan-edit-btn"
+                                                    onClick={() => handleStartEdit(plan)}
+                                                    title="이름 수정"
+                                                >
+                                                    ✏️
+                                                </button>
+                                                <button
+                                                    className="plan-delete-btn"
+                                                    onClick={() => {
+                                                        if (window.confirm(`"${plan.name}" 플랜을 삭제하시겠습니까 ? `)) {
+                                                            onDeletePlan(plan.id);
+                                                        }
+                                                    }}
+                                                    title="삭제"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
 
                                 <div className="plan-meta">

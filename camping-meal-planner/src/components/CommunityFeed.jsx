@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { mockRecommendations, formatTimeAgo } from '../data/communityData';
 
 export default function CommunityFeed({ isOpen, onClose, onOpenForm, isModal = true }) {
+    const [activeTab, setActiveTab] = useState('all'); // 'all' or 'mine'
+
     const [userRecommendations, setUserRecommendations] = useState(() => {
         const saved = localStorage.getItem('camping_recommendations');
         return saved ? JSON.parse(saved) : [];
@@ -14,8 +16,14 @@ export default function CommunityFeed({ isOpen, onClose, onOpenForm, isModal = t
 
     // Combine mock and user recommendations
     const allPosts = [...userRecommendations, ...mockRecommendations];
+
+    // Filter posts based on active tab
+    const filteredPosts = activeTab === 'mine'
+        ? userRecommendations
+        : allPosts;
+
     // Sort by likes (descending), then by timestamp (descending)
-    const sortedPosts = [...allPosts].sort((a, b) => {
+    const sortedPosts = [...filteredPosts].sort((a, b) => {
         if (b.likes !== a.likes) {
             return b.likes - a.likes; // Higher likes first
         }
@@ -40,12 +48,54 @@ export default function CommunityFeed({ isOpen, onClose, onOpenForm, isModal = t
                 {isModal && <button className="modal-close" onClick={onClose}>×</button>}
             </div>
 
+            {/* 탭 네비게이션 */}
+            <div style={{
+                display: 'flex',
+                gap: '8px',
+                padding: '0 24px',
+                borderBottom: '1px solid var(--color-border)',
+                marginBottom: '16px'
+            }}>
+                <button
+                    onClick={() => setActiveTab('all')}
+                    style={{
+                        padding: '12px 20px',
+                        background: 'transparent',
+                        border: 'none',
+                        borderBottom: activeTab === 'all' ? '2px solid var(--color-accent-primary)' : '2px solid transparent',
+                        color: activeTab === 'all' ? 'var(--color-accent-primary)' : 'var(--color-text-secondary)',
+                        fontWeight: activeTab === 'all' ? '700' : '500',
+                        fontSize: '0.95rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    전체 ({allPosts.length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('mine')}
+                    style={{
+                        padding: '12px 20px',
+                        background: 'transparent',
+                        border: 'none',
+                        borderBottom: activeTab === 'mine' ? '2px solid var(--color-accent-primary)' : '2px solid transparent',
+                        color: activeTab === 'mine' ? 'var(--color-accent-primary)' : 'var(--color-text-secondary)',
+                        fontWeight: activeTab === 'mine' ? '700' : '500',
+                        fontSize: '0.95rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    내가 만든 조합 ({userRecommendations.length})
+                </button>
+            </div>
+
             <div className="modal-body">
                 <div className="community-feed">
                     {sortedPosts.length === 0 ? (
                         <div className="empty-feed">
-                            <p>아직 추천이 없습니다.</p>
-                            <p className="hint">첫 추천을 등록해보세요!</p>
+                            <p>{activeTab === 'mine' ? '아직 만든 조합이 없습니다.' : '아직 추천이 없습니다.'}</p>
+                            <p className="hint">{activeTab === 'mine' ? '첫 조합을 만들어보세요!' : '첫 추천을 등록해보세요!'}</p>
                         </div>
                     ) : (
                         sortedPosts.map(post => (

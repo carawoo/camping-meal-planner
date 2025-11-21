@@ -4,8 +4,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
     const tabs = [
         { id: 'home', icon: '🏠', label: '홈' },
         { id: 'plans', icon: '📅', label: '식단 계획' },
-        { id: 'community', icon: '💬', label: '커뮤니티' },
-        { id: 'favorites', icon: '❤️', label: '즐겨찾기' }
+        { id: 'community', icon: '💬', label: '커뮤니티' }
     ];
 
     return (

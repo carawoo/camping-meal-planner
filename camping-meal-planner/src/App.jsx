@@ -12,7 +12,6 @@ import MealPlan from './components/MealPlan';
 import SavedPlans from './components/SavedPlans';
 import BottomNav from './components/BottomNav';
 import FloatingActionButton from './components/FloatingActionButton';
-import Favorites from './components/Favorites';
 import MealDetail from './components/MealDetail';
 import { meals } from './data/meals';
 
@@ -23,11 +22,10 @@ function App() {
     difficulty: 'all',
     allergies: [],
     dietary: [],
-    maxSpicy: 1
+    maxSpicy: 3  // 기본값 "보통"으로 변경
   });
 
-  const [activeTab, setActiveTab] = useState('home'); // home, rankings, saved, community, favorites
-  const [favorites, setFavorites] = useState([]);
+  const [activeTab, setActiveTab] = useState('home'); // home, rankings, saved, community
   const [isCommunityFeedOpen, setIsCommunityFeedOpen] = useState(false);
   const [isRecommendationFormOpen, setIsRecommendationFormOpen] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
@@ -40,44 +38,40 @@ function App() {
   const [isMealDetailOpen, setIsMealDetailOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  // Detect scroll position for scroll-to-top button
+  // Detect scroll position for scroll-to-top button and floating button
   useEffect(() => {
     const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300);
+      // Show buttons when scrolled past Hero section (approximately 400px)
+      setShowScrollTop(window.scrollY > 400);
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Load saved plans and favorites from localStorage
+  // Load saved plans from localStorage
   useEffect(() => {
     const savedP = localStorage.getItem('camping_plans');
     if (savedP) {
       try {
-        setSavedPlans(JSON.parse(savedP));
+        const plans = JSON.parse(savedP);
+        // Filter out invalid plans (where name is not a string)
+        const validPlans = plans.filter(plan =>
+          plan && typeof plan.name === 'string' && plan.schedule
+        );
+
+        // If we filtered out invalid plans, update localStorage
+        if (validPlans.length !== plans.length) {
+          localStorage.setItem('camping_plans', JSON.stringify(validPlans));
+        }
+
+        setSavedPlans(validPlans);
       } catch (e) {
         console.error('Failed to load plans:', e);
-      }
-    }
-
-    const savedF = localStorage.getItem('camping_favorites');
-    if (savedF) {
-      try {
-        setFavorites(JSON.parse(savedF));
-      } catch (e) {
-        console.error('Failed to load favorites:', e);
+        localStorage.removeItem('camping_plans');
       }
     }
   }, []);
-
-  const toggleFavorite = (mealId) => {
-    const newFavorites = favorites.includes(mealId)
-      ? favorites.filter(id => id !== mealId)
-      : [...favorites, mealId];
-    setFavorites(newFavorites);
-    localStorage.setItem('favoriteMeals', JSON.stringify(newFavorites));
-  };
 
   // Helper function to get all meals from all categories
   const getAllMeals = () => {
@@ -90,8 +84,43 @@ function App() {
     return allMeals;
   };
 
-  // Track meal clicks
+  // Track meal clicks (주차별 저장)
   const trackMealClick = (mealId) => {
+    // 현재 주차 계산
+    const getCurrentWeek = () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const day = now.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + diff);
+      monday.setHours(0, 0, 0, 0);
+      const weekNum = Math.ceil((monday - new Date(year, 0, 1)) / (7 * 24 * 60 * 60 * 1000));
+      return `${year}-W${String(weekNum).padStart(2, '0')}`;
+    };
+
+    const currentWeek = getCurrentWeek();
+
+    // 주차별 데이터 로드
+    const weeklyData = JSON.parse(localStorage.getItem('weekly_rankings') || '{}');
+
+    // 현재 주차 데이터 업데이트
+    if (!weeklyData[currentWeek]) {
+      weeklyData[currentWeek] = {};
+    }
+    weeklyData[currentWeek][mealId] = (weeklyData[currentWeek][mealId] || 0) + 1;
+
+    // 저장 (최근 8주만 유지)
+    const weeks = Object.keys(weeklyData).sort().reverse();
+    const recentWeeks = weeks.slice(0, 8);
+    const cleanedData = {};
+    recentWeeks.forEach(week => {
+      cleanedData[week] = weeklyData[week];
+    });
+
+    localStorage.setItem('weekly_rankings', JSON.stringify(cleanedData));
+
+    // 레거시 호환성을 위해 기존 형식도 유지
     const clicks = JSON.parse(localStorage.getItem('meal_clicks') || '{}');
     clicks[mealId] = (clicks[mealId] || 0) + 1;
     localStorage.setItem('meal_clicks', JSON.stringify(clicks));
@@ -140,6 +169,14 @@ function App() {
 
   const handleDeletePlan = (planId) => {
     const updatedPlans = savedPlans.filter(p => p.id !== planId);
+    setSavedPlans(updatedPlans);
+    localStorage.setItem('camping_plans', JSON.stringify(updatedPlans));
+  };
+
+  const handleRenamePlan = (planId, newName) => {
+    const updatedPlans = savedPlans.map(p =>
+      p.id === planId ? { ...p, name: newName } : p
+    );
     setSavedPlans(updatedPlans);
     localStorage.setItem('camping_plans', JSON.stringify(updatedPlans));
   };
@@ -226,6 +263,7 @@ function App() {
             onClose={() => setActiveTab('home')}
             savedPlans={savedPlans}
             onDeletePlan={handleDeletePlan}
+            onRenamePlan={handleRenamePlan}
             inlineMode={true}
             onOpenWizard={() => setIsWizardOpen(true)}
           />
@@ -239,16 +277,6 @@ function App() {
             onClose={() => setActiveTab('home')}
             onOpenForm={() => setIsRecommendationFormOpen(true)}
             isModal={false}
-          />
-        </div>
-      )}
-
-      {activeTab === 'favorites' && (
-        <div className="tab-content">
-          <Favorites
-            favorites={favorites}
-            onToggleFavorite={toggleFavorite}
-            onNavigateHome={() => setActiveTab('home')}
           />
         </div>
       )}
@@ -284,6 +312,7 @@ function App() {
           onClose={() => setIsSavedPlansOpen(false)}
           savedPlans={savedPlans}
           onDeletePlan={handleDeletePlan}
+          onRenamePlan={handleRenamePlan}
         />
       )}
 
@@ -300,7 +329,7 @@ function App() {
           right: '20px',
           zIndex: 9999
         }}>
-          {activeTab === 'home' && (
+          {activeTab === 'home' && showScrollTop && (
             <FloatingActionButton
               icon="✨"
               label="맞춤 추천"

@@ -69,6 +69,20 @@ export default function Hero({ onNavigateToCommunity, onOpenWizard }) {
                         </div>
                     </div>
 
+                    {/* Recommendation Button */}
+                    <button
+                        className="btn btn-primary"
+                        onClick={onOpenWizard}
+                        style={{
+                            marginTop: '16px',
+                            width: '100%',
+                            padding: '14px 24px',
+                            fontSize: '1rem',
+                            fontWeight: '600'
+                        }}
+                    >
+                        ✨ 맞춤 추천 받기
+                    </button>
                 </div>
             </div>
         </section>

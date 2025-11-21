@@ -7,7 +7,7 @@ export default function FilterBar({ onFilterChange }) {
         difficulty: 'all',
         allergies: [],
         dietary: [],
-        maxSpicy: 5
+        maxSpicy: 3  // 기본값 "보통"으로 변경
     });
 
     const [showAdvanced, setShowAdvanced] = useState(false);
@@ -39,7 +39,7 @@ export default function FilterBar({ onFilterChange }) {
             difficulty: 'all',
             allergies: [],
             dietary: [],
-            maxSpicy: 5
+            maxSpicy: 3  // 기본값 "보통"으로 변경
         };
         setFilters(initialFilters);
         onFilterChange(initialFilters);
@@ -48,20 +48,18 @@ export default function FilterBar({ onFilterChange }) {
     return (
         <div className="filter-bar-container">
             <div className="filter-bar">
-                {/* Advanced Filter Toggle - Only Visible Element */}
+                {/* Advanced Filter Toggle - Outline Style */}
                 <button
-                    className="filter-advanced-toggle"
+                    className="filter-advanced-toggle outline"
                     onClick={() => setShowAdvanced(!showAdvanced)}
+                    style={{
+                        background: 'transparent',
+                        border: '1px solid var(--color-border)',
+                        color: 'var(--color-text)',
+                        fontWeight: '500'
+                    }}
                 >
                     {showAdvanced ? '필터 접기 ▲' : '상세필터 ▼'}
-                </button>
-
-                {/* Reset Button */}
-                <button
-                    className="filter-btn reset-btn"
-                    onClick={handleReset}
-                >
-                    🔄 초기화
                 </button>
             </div>
 
@@ -169,22 +167,46 @@ export default function FilterBar({ onFilterChange }) {
                         </div>
                     </div>
 
-                    {/* Spicy Level */}
+                    {/* Spicy Level - 칩 버튼으로 변경 */}
                     <div className="filter-group-advanced">
-                        <span className="filter-label-advanced">🌶️ 최대 매운맛</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <input
-                                type="range"
-                                min="0"
-                                max="5"
-                                value={filters.maxSpicy}
-                                onChange={(e) => handleFilterChange('maxSpicy', parseInt(e.target.value))}
-                                className="spicy-range"
-                            />
-                            <span style={{ minWidth: '60px', fontSize: '0.875rem', color: 'var(--color-text)' }}>
-                                {filters.maxSpicy === 0 ? '안매움' : `${filters.maxSpicy}/5`}
-                            </span>
+                        <span className="filter-label-advanced">🌶️ 매운맛</span>
+                        <div className="filter-chips">
+                            {[
+                                { value: 5, label: '전체', emoji: '🌟' },
+                                { value: 1, label: '안맵게', emoji: '🥛' },
+                                { value: 3, label: '보통', emoji: '🌶️' },
+                                { value: 5, label: '맵게', emoji: '🔥' }
+                            ].map(({ value, label, emoji }) => (
+                                <button
+                                    key={label}
+                                    className={`filter-chip ${filters.maxSpicy === value ? 'active spicy-chip' : ''}`}
+                                    onClick={() => handleFilterChange('maxSpicy', value)}
+                                    style={{
+                                        borderRadius: '999px',
+                                        backgroundColor: filters.maxSpicy === value ? '#ef4444' : undefined
+                                    }}
+                                >
+                                    {emoji} {label}
+                                </button>
+                            ))}
                         </div>
+                    </div>
+
+                    {/* Reset Button - 필터 내부로 이동 */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
+                        <button
+                            className="filter-btn reset-btn"
+                            onClick={handleReset}
+                            style={{
+                                background: 'var(--color-danger)',
+                                color: 'white',
+                                padding: '10px 20px',
+                                borderRadius: '8px',
+                                fontWeight: '600'
+                            }}
+                        >
+                            🔄 초기화
+                        </button>
                     </div>
                 </div>
             )}

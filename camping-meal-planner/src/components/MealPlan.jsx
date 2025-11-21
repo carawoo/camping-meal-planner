@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { meals } from '../data/meals';
 
 export default function MealPlan({ isOpen, onClose, plan, onSave }) {
     const [isSaved, setIsSaved] = useState(false);
@@ -23,7 +24,7 @@ export default function MealPlan({ isOpen, onClose, plan, onSave }) {
         }
     }, [plan]);
 
-    if (!isOpen) return null;
+    if (!isOpen || !plan || !localPlan) return null;
 
     const getMealTime = (mealType) => {
         switch (mealType) {
@@ -68,8 +69,17 @@ export default function MealPlan({ isOpen, onClose, plan, onSave }) {
 
     const regenerateMeal = (dayIndex, mealIndex) => {
         // Get all meals for this time slot
-        const mealType = localPlan.schedule[dayIndex].meals[mealIndex].type; // Use 'type' from existing plan
-        const allMealsForType = meals[mealType]; // Assuming meals object is structured by type (breakfast, lunch, dinner)
+        const mealType = localPlan.schedule[dayIndex].meals[mealIndex].type;
+
+        // Map meal types to data structure (lunch uses arrival data)
+        const mealTypeMap = {
+            'lunch': 'arrival',
+            'dinner': 'dinner',
+            'breakfast': 'breakfast'
+        };
+
+        const dataKey = mealTypeMap[mealType] || mealType;
+        const allMealsForType = meals[dataKey];
 
         if (!allMealsForType) {
             console.warn(`No meals found for type: ${mealType}`);
@@ -93,9 +103,18 @@ export default function MealPlan({ isOpen, onClose, plan, onSave }) {
 
     const regenerateDay = (dayIndex) => {
         const newPlan = { ...localPlan };
+
+        // Map meal types to data structure
+        const mealTypeMap = {
+            'lunch': 'arrival',
+            'dinner': 'dinner',
+            'breakfast': 'breakfast'
+        };
+
         newPlan.schedule[dayIndex].meals.forEach((meal, mealIndex) => {
             const mealType = meal.type;
-            const allMealsForType = meals[mealType];
+            const dataKey = mealTypeMap[mealType] || mealType;
+            const allMealsForType = meals[dataKey];
 
             if (allMealsForType && allMealsForType.length > 0) {
                 const availableMeals = allMealsForType.filter(m => !m.isHidden);
@@ -110,14 +129,25 @@ export default function MealPlan({ isOpen, onClose, plan, onSave }) {
     };
 
     const handleSave = () => {
-        if (isSaved) {
-            alert('이미 저장된 식단 계획입니다!');
-            return;
+        // Check if plan already exists in localStorage
+        const savedPlans = localStorage.getItem('camping_plans');
+        if (savedPlans) {
+            const plans = JSON.parse(savedPlans);
+            const exists = plans.some(p =>
+                p.duration === localPlan.duration &&
+                p.style === localPlan.style &&
+                JSON.stringify(p.schedule) === JSON.stringify(localPlan.schedule)
+            );
+
+            if (exists) {
+                alert('이미 저장된 식단 계획입니다!');
+                return;
+            }
         }
 
-        const name = prompt('식단표 이름을 입력해주세요:', `${plan.duration} ${plan.style} 식단`);
+        const name = prompt('식단표 이름을 입력해주세요:', `${localPlan.duration} ${localPlan.style} 식단`);
         if (name) {
-            onSave(name, plan);
+            onSave(name, localPlan);
             setIsSaved(true);
         }
     };
@@ -252,9 +282,6 @@ export default function MealPlan({ isOpen, onClose, plan, onSave }) {
                 </div>
 
                 <div className="modal-footer">
-                    <button className="btn btn-outline" onClick={onClose}>
-                        닫기
-                    </button>
                     <button
                         className="btn btn-secondary"
                         onClick={() => {
@@ -268,13 +295,7 @@ export default function MealPlan({ isOpen, onClose, plan, onSave }) {
                     </button>
                     <button
                         className="btn btn-primary"
-                        onClick={() => {
-                            if (isSaved) {
-                                alert('이미 저장된 식단 계획입니다!');
-                                return;
-                            }
-                            onSave(localPlan);
-                        }}
+                        onClick={handleSave}
                     >
                         계획 저장
                     </button>
