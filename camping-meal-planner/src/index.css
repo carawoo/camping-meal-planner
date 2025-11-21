@@ -1733,8 +1733,8 @@ span {
 
 .plan-meal-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 10px;
   padding: 8px 12px;
   background: var(--color-bg-tertiary);
   border-radius: var(--radius-sm);
@@ -1750,13 +1750,33 @@ span {
   color: var(--color-text-secondary);
   font-weight: 500;
   margin-left: 0;
+  min-width: 50px;
+  flex-shrink: 0;
+}
+
+.plan-meal-item .meal-image-small {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.plan-meal-item .meal-image-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .plan-meal-item .meal-name {
+  flex: 1;
   font-size: 0.875rem;
   color: var(--color-text);
   font-weight: 600;
-  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @keyframes slideDown {

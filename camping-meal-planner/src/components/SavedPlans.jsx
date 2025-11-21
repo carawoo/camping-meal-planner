@@ -261,6 +261,11 @@ export default function SavedPlans({ isOpen, onClose, savedPlans, onDeletePlan, 
                                                     {day.meals.map((meal, mealIdx) => (
                                                         <div key={mealIdx} className="plan-meal-item">
                                                             <span className="meal-time">{getMealTypeLabel(meal.type)}</span>
+                                                            {meal.item?.image && (
+                                                                <div className="meal-image-small">
+                                                                    <img src={meal.item.image} alt={meal.item.title} />
+                                                                </div>
+                                                            )}
                                                             <span className="meal-name">{meal.item?.title || meal.name || '-'}</span>
                                                         </div>
                                                     ))}

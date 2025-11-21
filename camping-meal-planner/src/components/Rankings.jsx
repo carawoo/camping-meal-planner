@@ -41,29 +41,20 @@ export default function Rankings({ onViewMeal }) {
     const [timeUntilReset, setTimeUntilReset] = useState({ days: 0, hours: 0 });
     const [currentWeek, setCurrentWeek] = useState('');
 
-    useEffect(() => {
+    const loadRankings = () => {
         const week = getCurrentWeek();
         setCurrentWeek(week);
 
-        // 항상 mock 데이터 사용 (데모용)
-        const currentWeekData = {
-            'a1': 156,  // 떡볶이 밀키트
-            'd1': 142,  // 돈마호크 스테이크
-            'd4': 128,  // 삼겹살 세트
-            'a2': 115,  // 간단 파스타
-            'd3': 98,   // 얼큰한 부대찌개
-            'd7': 87,   // 김치찌개
-            'd8': 76,   // 불고기
-            'a4': 65,   // 김밥 세트
-            'b1': 54,   // 해장 라면
-            'd2': 43    // 감바스 알 아히요
-        };
-
-        // localStorage에 저장
+        // localStorage에서 실제 데이터 로드
         const weeklyData = JSON.parse(localStorage.getItem('weekly_rankings') || '{}');
-        weeklyData[week] = currentWeekData;
-        localStorage.setItem('weekly_rankings', JSON.stringify(weeklyData));
 
+        // 현재 주차 데이터가 없으면 빈 객체로 초기화
+        if (!weeklyData[week]) {
+            weeklyData[week] = {};
+            localStorage.setItem('weekly_rankings', JSON.stringify(weeklyData));
+        }
+
+        const currentWeekData = weeklyData[week];
         const previousWeek = getPreviousWeek(week);
         const previousWeekData = weeklyData[previousWeek] || {};
 
@@ -98,6 +89,11 @@ export default function Rankings({ onViewMeal }) {
             .slice(0, 20); // Top 20
 
         setRankedMeals(sorted);
+    };
+
+    useEffect(() => {
+        // 초기 로드
+        loadRankings();
 
         // 리셋까지 남은 시간 업데이트
         const updateTimer = () => {
@@ -106,7 +102,13 @@ export default function Rankings({ onViewMeal }) {
         updateTimer();
         const timer = setInterval(updateTimer, 60000); // 1분마다 업데이트
 
-        return () => clearInterval(timer);
+        // 10초마다 랭킹 데이터 새로고침 (실시간 업데이트)
+        const rankingRefresh = setInterval(loadRankings, 10000);
+
+        return () => {
+            clearInterval(timer);
+            clearInterval(rankingRefresh);
+        };
     }, []);
 
     const getPreviousWeek = (weekStr) => {
