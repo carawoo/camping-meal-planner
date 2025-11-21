@@ -962,6 +962,15 @@ span {
   gap: 8px;
 }
 
+.required-badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--color-accent-primary);
+  color: white;
+  font-weight: 700;
+}
+
 .wizard-options {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -1498,9 +1507,10 @@ span {
 
 .timeline-meal-image {
   width: 100%;
-  height: 120px;
+  aspect-ratio: 1 / 1;
   border-radius: var(--radius-md);
   overflow: hidden;
+  max-width: 300px;
 }
 
 .timeline-meal-image img {

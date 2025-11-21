@@ -32,6 +32,11 @@ export default function RecommendationWizard({ isOpen, onClose, onRecommend }) {
         let filtered = allMeals.filter(meal => {
             if (meal.isHidden) return false;
 
+            // 알코올 음료 제외 (식사가 아님)
+            if (meal.tags?.includes('alcohol') || meal.tags?.includes('drink')) {
+                return false;
+            }
+
             // Filter by allergies
             if (preferences.allergies.length > 0) {
                 const hasAllergen = meal.allergens?.some(allergen =>
@@ -136,29 +141,35 @@ export default function RecommendationWizard({ isOpen, onClose, onRecommend }) {
             }
         } else if (preferences.duration === '2nights') {
             // 2박3일: Day1(저녁), Day2(아침,점심,저녁), Day3(아침) -> Total 5 meals
-            // Or Day1(점심,저녁) ... -> Total 6 meals. 
-            // Let's stick to a standard 5-meal flow for 2N3D to be safe/common:
-            // Day 1: Dinner
-            // Day 2: Breakfast, Lunch, Dinner
-            // Day 3: Breakfast
+            // Day 2에 육류/BBQ 메뉴 우선 배치
+
+            // BBQ/육류 메뉴와 일반 메뉴 분리
+            const bbqMeals = filtered.filter(m => m.tags?.includes('bbq') || m.tags?.includes('meat'));
+            const otherMeals = filtered.filter(m => !m.tags?.includes('bbq') && !m.tags?.includes('meat'));
+
+            // Day 1: 가벼운 저녁 (도착 첫날)
             schedule.push({
                 day: 1,
                 meals: [
-                    { type: 'dinner', item: filtered[0] || allMeals[0] }
+                    { type: 'dinner', item: otherMeals[0] || filtered[0] || allMeals[0] }
                 ]
             });
+
+            // Day 2: 아침(간단), 점심(육류), 저녁(육류)
             schedule.push({
                 day: 2,
                 meals: [
-                    { type: 'breakfast', item: filtered[1] || allMeals[1] },
-                    { type: 'lunch', item: filtered[2] || allMeals[2] },
-                    { type: 'dinner', item: filtered[3] || allMeals[3] }
+                    { type: 'breakfast', item: otherMeals[1] || filtered[1] || allMeals[1] },
+                    { type: 'lunch', item: bbqMeals[0] || filtered[2] || allMeals[2] },
+                    { type: 'dinner', item: bbqMeals[1] || filtered[3] || allMeals[3] }
                 ]
             });
+
+            // Day 3: 간단한 아침
             schedule.push({
                 day: 3,
                 meals: [
-                    { type: 'breakfast', item: filtered[4] || allMeals[4] }
+                    { type: 'breakfast', item: otherMeals[2] || filtered[4] || allMeals[4] }
                 ]
             });
         }
@@ -206,7 +217,7 @@ export default function RecommendationWizard({ isOpen, onClose, onRecommend }) {
                 <div className="modal-body">
                     {/* Camping Style */}
                     <div className="wizard-section">
-                        <h3 className="wizard-question">Q1. 캠핑 스타일은?</h3>
+                        <h3 className="wizard-question">Q1. 캠핑 스타일은? <span className="required-badge">필수</span></h3>
                         <div className="wizard-options">
                             {[
                                 { value: 'car', label: '🚗 차박', desc: '차에서 간편하게' },
@@ -228,7 +239,7 @@ export default function RecommendationWizard({ isOpen, onClose, onRecommend }) {
 
                     {/* Duration */}
                     <div className="wizard-section">
-                        <h3 className="wizard-question">Q2. 캠핑 일수는?</h3>
+                        <h3 className="wizard-question">Q2. 캠핑 일수는? <span className="required-badge">필수</span></h3>
                         <div className="wizard-options">
                             {[
                                 { value: 'day', label: '☀️ 당일', desc: '2끼' },
@@ -250,7 +261,7 @@ export default function RecommendationWizard({ isOpen, onClose, onRecommend }) {
 
                     {/* Location */}
                     <div className="wizard-section">
-                        <h3 className="wizard-question">Q3. 캠핑 지역은?</h3>
+                        <h3 className="wizard-question">Q3. 캠핑 지역은? <span className="required-badge">필수</span></h3>
                         <div className="wizard-options">
                             {[
                                 { value: 'coast', label: '🌊 해안', desc: '바다 근처' },
@@ -372,6 +383,7 @@ export default function RecommendationWizard({ isOpen, onClose, onRecommend }) {
                     <button
                         className="btn btn-primary"
                         onClick={handleGetRecommendations}
+                        disabled={!preferences.campingStyle || !preferences.duration || !preferences.location}
                         style={{ padding: '12px 32px' }}
                     >
                         추천 받기 →

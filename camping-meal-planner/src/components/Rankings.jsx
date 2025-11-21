@@ -78,15 +78,21 @@ export default function Rankings({ onViewMeal }) {
         });
 
         // Sort by clicks (descending) and filter out hidden meals
-        const sorted = allMeals
+        const withClicks = allMeals
             .filter(meal => !meal.isHidden)
             .map(meal => ({
                 ...meal,
                 clicks: currentWeekData[meal.id] || 0,
                 previousRank: prevRankMap[meal.id]
-            }))
-            .sort((a, b) => b.clicks - a.clicks)
-            .slice(0, 20); // Top 20
+            }));
+
+        // 클릭 데이터가 있는지 확인
+        const hasClickData = withClicks.some(m => m.clicks > 0);
+
+        // 클릭 데이터가 있으면 클릭 수로, 없으면 평점으로 정렬
+        const sorted = hasClickData
+            ? withClicks.sort((a, b) => b.clicks - a.clicks).slice(0, 20)
+            : withClicks.sort((a, b) => b.rating - a.rating).slice(0, 20);
 
         setRankedMeals(sorted);
     };

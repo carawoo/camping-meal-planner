@@ -3,6 +3,7 @@ import { useState } from 'react';
 export default function BottomNav({ activeTab, onTabChange }) {
     const tabs = [
         { id: 'home', icon: '🏠', label: '홈' },
+        { id: 'rankings', icon: '📊', label: '랭킹' },
         { id: 'plans', icon: '📅', label: '식단 계획' },
         { id: 'community', icon: '💬', label: '커뮤니티' }
     ];

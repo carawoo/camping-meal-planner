@@ -28,6 +28,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('home'); // home, rankings, saved, community
   const [isCommunityFeedOpen, setIsCommunityFeedOpen] = useState(false);
   const [isRecommendationFormOpen, setIsRecommendationFormOpen] = useState(false);
+  const [popularMeals, setPopularMeals] = useState([]);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isMealPlanOpen, setIsMealPlanOpen] = useState(false);
   const [isSavedPlansOpen, setIsSavedPlansOpen] = useState(false);
@@ -47,6 +48,13 @@ function App() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // 인기 메뉴 로드 (초기 + 주기적 업데이트)
+  useEffect(() => {
+    loadPopularMeals();
+    const interval = setInterval(loadPopularMeals, 10000); // 10초마다 업데이트
+    return () => clearInterval(interval);
   }, []);
 
   // Load saved plans from localStorage
@@ -84,21 +92,49 @@ function App() {
     return allMeals;
   };
 
+  // 현재 주차 계산 (공통 함수)
+  const getCurrentWeek = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const day = now.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diff);
+    monday.setHours(0, 0, 0, 0);
+    const weekNum = Math.ceil((monday - new Date(year, 0, 1)) / (7 * 24 * 60 * 60 * 1000));
+    return `${year}-W${String(weekNum).padStart(2, '0')}`;
+  };
+
+  // 인기 메뉴 로드
+  const loadPopularMeals = () => {
+    const currentWeek = getCurrentWeek();
+    const weeklyData = JSON.parse(localStorage.getItem('weekly_rankings') || '{}');
+    const currentWeekData = weeklyData[currentWeek] || {};
+
+    // 모든 메뉴 가져오기
+    const allMeals = getAllMeals();
+
+    // 클릭 수로 정렬
+    const withClicks = allMeals
+      .filter(m => !m.isHidden)
+      .map(meal => ({
+        ...meal,
+        clicks: currentWeekData[meal.id] || 0
+      }));
+
+    // 클릭 데이터가 있는지 확인
+    const hasClickData = withClicks.some(m => m.clicks > 0);
+
+    // 클릭 데이터가 있으면 클릭 수로, 없으면 평점으로 정렬
+    const sorted = hasClickData
+      ? withClicks.sort((a, b) => b.clicks - a.clicks).slice(0, 10)
+      : withClicks.sort((a, b) => b.rating - a.rating).slice(0, 10);
+
+    setPopularMeals(sorted);
+  };
+
   // Track meal clicks (주차별 저장)
   const trackMealClick = (mealId) => {
-    // 현재 주차 계산
-    const getCurrentWeek = () => {
-      const now = new Date();
-      const year = now.getFullYear();
-      const day = now.getDay();
-      const diff = day === 0 ? -6 : 1 - day;
-      const monday = new Date(now);
-      monday.setDate(now.getDate() + diff);
-      monday.setHours(0, 0, 0, 0);
-      const weekNum = Math.ceil((monday - new Date(year, 0, 1)) / (7 * 24 * 60 * 60 * 1000));
-      return `${year}-W${String(weekNum).padStart(2, '0')}`;
-    };
-
     const currentWeek = getCurrentWeek();
 
     // 주차별 데이터 로드
@@ -124,6 +160,9 @@ function App() {
     const clicks = JSON.parse(localStorage.getItem('meal_clicks') || '{}');
     clicks[mealId] = (clicks[mealId] || 0) + 1;
     localStorage.setItem('meal_clicks', JSON.stringify(clicks));
+
+    // 인기 메뉴 업데이트
+    loadPopularMeals();
   };
 
   const handleFilterChange = (newFilters) => {
@@ -200,9 +239,7 @@ function App() {
             {/* Popular This Week */}
             <MealSection
               title="🔥 이번주 인기 메뉴"
-              meals={getAllMeals()
-                .filter(m => !m.isHidden && m.rating >= 4.5)
-                .sort((a, b) => b.rating - a.rating)}
+              meals={popularMeals}
               layout="horizontal"
               onViewMeal={(meal) => {
                 trackMealClick(meal.id);
