@@ -29,6 +29,8 @@ export default function RecommendationWizard({ isOpen, onClose, onRecommend }) {
 
     const getRecommendations = () => {
         const allMeals = [...meals.arrival, ...meals.dinner, ...meals.breakfast];
+
+        // Base filtering (allergies, dietary, spicy, camping style)
         let filtered = allMeals.filter(meal => {
             if (meal.isHidden) return false;
 
@@ -91,85 +93,132 @@ export default function RecommendationWizard({ isOpen, onClose, onRecommend }) {
             });
         }
 
+        // 한국인 식사 패턴 기반 메뉴 분류
+        // 아침: 가볍고 간단한 메뉴 (죽, 김밥, 샌드위치, 주먹밥)
+        const breakfastMeals = filtered.filter(meal =>
+            meal.difficulty === 'easy' &&
+            meal.cookingTime <= 20 &&
+            !meal.tags?.includes('bbq') &&
+            !meal.tags?.includes('heavy') &&
+            !meal.tags?.includes('meat')
+        );
+
+        // 점심: 효율적이고 든든한 메뉴 (비빔밥, 찌개, 파스타, 국수)
+        const lunchMeals = filtered.filter(meal =>
+            meal.cookingTime <= 30 &&
+            !meal.tags?.includes('bbq')
+        );
+
+        // 저녁: 무거운 육류/BBQ 메뉴 (삼겹살, 불고기, 고기구이)
+        const dinnerMeals = filtered.filter(meal =>
+            meal.tags?.includes('bbq') ||
+            meal.tags?.includes('meat') ||
+            meal.tags?.includes('heavy') ||
+            meal.tags?.includes('hot')
+        );
+
+        // Fallback: 필터링된 결과가 없을 경우 전체 메뉴 사용
+        const breakfastPool = breakfastMeals.length > 0 ? breakfastMeals : filtered;
+        const lunchPool = lunchMeals.length > 0 ? lunchMeals : filtered;
+        const dinnerPool = dinnerMeals.length > 0 ? dinnerMeals : filtered;
+
+        // 라면 메뉴 별도 추출 (마지막 날 아침용)
+        const ramenMeals = breakfastMeals.filter(meal =>
+            meal.tags?.includes('ramen') ||
+            meal.tags?.includes('last-day') ||
+            meal.title?.includes('라면')
+        );
+        const ramenPool = ramenMeals.length > 0 ? ramenMeals : breakfastPool;
+
+        // Helper function to get meal by type
+        const getMealByType = (type, index, isLastDay = false) => {
+            if (type === 'breakfast') {
+                // 마지막 날 아침은 라면 우선 추천
+                if (isLastDay && ramenPool.length > 0) {
+                    return ramenPool[index % ramenPool.length] || breakfastPool[index] || filtered[index] || allMeals[index];
+                }
+                return breakfastPool[index % breakfastPool.length] || filtered[index] || allMeals[index];
+            } else if (type === 'lunch') {
+                return lunchPool[index % lunchPool.length] || filtered[index] || allMeals[index];
+            } else if (type === 'dinner') {
+                return dinnerPool[index % dinnerPool.length] || filtered[index] || allMeals[index];
+            }
+        };
+
         // Build schedule based on duration
         const schedule = [];
+        let breakfastIdx = 0, lunchIdx = 0, dinnerIdx = 0;
 
         if (preferences.duration === 'day') {
             // 당일: 점심, 저녁
             schedule.push({
                 day: 1,
                 meals: [
-                    { type: 'lunch', item: filtered[0] || allMeals[0] },
-                    { type: 'dinner', item: filtered[1] || allMeals[1] }
+                    { type: 'lunch', item: getMealByType('lunch', lunchIdx++) },
+                    { type: 'dinner', item: getMealByType('dinner', dinnerIdx++) }
                 ]
             });
         } else if (preferences.duration === '1night') {
             // 1박2일: 3끼 (점심 시작 or 저녁 시작)
-            // Randomly choose start time (50/50) or could be user input later
             const startWithLunch = Math.random() > 0.5;
 
             if (startWithLunch) {
-                // Case A: 점심 -> 저녁 -> 다음날 아침
+                // Case A: 점심 -> 저녁 -> 다음날 아침 (마지막 날)
                 schedule.push({
                     day: 1,
                     meals: [
-                        { type: 'lunch', item: filtered[0] || allMeals[0] },
-                        { type: 'dinner', item: filtered[1] || allMeals[1] }
+                        { type: 'lunch', item: getMealByType('lunch', lunchIdx++) },
+                        { type: 'dinner', item: getMealByType('dinner', dinnerIdx++) }
                     ]
                 });
                 schedule.push({
                     day: 2,
                     meals: [
-                        { type: 'breakfast', item: filtered[2] || allMeals[2] }
+                        { type: 'breakfast', item: getMealByType('breakfast', breakfastIdx++, true) } // 마지막 날 아침 = 라면
                     ]
                 });
             } else {
-                // Case B: 저녁 -> 다음날 아침 -> 다음날 점심
+                // Case B: 저녁 -> 다음날 아침 (마지막 날) -> 다음날 점심
                 schedule.push({
                     day: 1,
                     meals: [
-                        { type: 'dinner', item: filtered[0] || allMeals[0] }
+                        { type: 'dinner', item: getMealByType('dinner', dinnerIdx++) }
                     ]
                 });
                 schedule.push({
                     day: 2,
                     meals: [
-                        { type: 'breakfast', item: filtered[1] || allMeals[1] },
-                        { type: 'lunch', item: filtered[2] || allMeals[2] }
+                        { type: 'breakfast', item: getMealByType('breakfast', breakfastIdx++, true) }, // 마지막 날 아침 = 라면
+                        { type: 'lunch', item: getMealByType('lunch', lunchIdx++) }
                     ]
                 });
             }
         } else if (preferences.duration === '2nights') {
             // 2박3일: Day1(저녁), Day2(아침,점심,저녁), Day3(아침) -> Total 5 meals
-            // Day 2에 육류/BBQ 메뉴 우선 배치
 
-            // BBQ/육류 메뉴와 일반 메뉴 분리
-            const bbqMeals = filtered.filter(m => m.tags?.includes('bbq') || m.tags?.includes('meat'));
-            const otherMeals = filtered.filter(m => !m.tags?.includes('bbq') && !m.tags?.includes('meat'));
-
-            // Day 1: 가벼운 저녁 (도착 첫날)
+            // Day 1: 저녁 (도착 첫날, 중간 정도 무게)
             schedule.push({
                 day: 1,
                 meals: [
-                    { type: 'dinner', item: otherMeals[0] || filtered[0] || allMeals[0] }
+                    { type: 'dinner', item: getMealByType('dinner', dinnerIdx++) }
                 ]
             });
 
-            // Day 2: 아침(간단), 점심(육류), 저녁(육류)
+            // Day 2: 아침(가벼운), 점심(든든한), 저녁(풍성한 BBQ)
             schedule.push({
                 day: 2,
                 meals: [
-                    { type: 'breakfast', item: otherMeals[1] || filtered[1] || allMeals[1] },
-                    { type: 'lunch', item: bbqMeals[0] || filtered[2] || allMeals[2] },
-                    { type: 'dinner', item: bbqMeals[1] || filtered[3] || allMeals[3] }
+                    { type: 'breakfast', item: getMealByType('breakfast', breakfastIdx++) },
+                    { type: 'lunch', item: getMealByType('lunch', lunchIdx++) },
+                    { type: 'dinner', item: getMealByType('dinner', dinnerIdx++) }
                 ]
             });
 
-            // Day 3: 간단한 아침
+            // Day 3: 마지막 날 아침 = 라면
             schedule.push({
                 day: 3,
                 meals: [
-                    { type: 'breakfast', item: otherMeals[2] || filtered[4] || allMeals[4] }
+                    { type: 'breakfast', item: getMealByType('breakfast', breakfastIdx++, true) } // 마지막 날 아침 = 라면
                 ]
             });
         }

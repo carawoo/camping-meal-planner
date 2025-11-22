@@ -1089,7 +1089,7 @@ export const meals = {
             cookingTime: 10,
             priceRange: 'low',
             price: 8000,
-            tags: ['hangover', 'spicy', 'quick'],
+            tags: ['hangover', 'spicy', 'quick', 'ramen', 'last-day'],
             rating: 4.6,
             servings: 2,
             allergens: ['gluten', 'soy', 'eggs'],
@@ -1108,6 +1108,202 @@ export const meals = {
             reviews: [
                 { author: '해장타', rating: 5, comment: '술 먹은 다음날 아침 필수! 콩나물 넣으면 완벽', date: '1일 전', emoji: '🍜' },
                 { author: '소주러버', rating: 5, comment: '캠핑 두어짐 해장엔 역시 라면! 간단하게 끓여먹기', date: '2일 전', emoji: '🍺' }
+            ]
+        },
+        {
+            id: 'b1_cheese',
+            title: '치즈라면',
+            description: '남은 치즈로 크리미하게! 고소한 치즈와 라면의 환상 조합.',
+            image: 'https://images.unsplash.com/photo-1623341214825-9f4f963727da?w=800&auto=format&fit=crop&q=80',
+            searchQuery: '치즈라면',
+            category: 'korean',
+            difficulty: 'easy',
+            cookingTime: 12,
+            priceRange: 'low',
+            price: 6000,
+            tags: ['ramen', 'last-day', 'leftover', 'creamy'],
+            rating: 4.7,
+            servings: 2,
+            allergens: ['gluten', 'soy', 'dairy'],
+            dietary: [],
+            spicyLevel: 2,
+            ingredients: [
+                { name: '라면', amount: '2개' },
+                { name: '슬라이스 치즈', amount: '2장' },
+                { name: '계란', amount: '1개' },
+                { name: '대파', amount: '약간' }
+            ],
+            seasonings: [
+                { name: '라면스프', amount: '제공' },
+                { name: '우유', amount: '1/4컵(선택)' }
+            ],
+            reviews: [
+                { author: '치즈러버', rating: 5, comment: '전날 남은 치즈 활용 최고! 크리미해서 아이들이 좋아해요', date: '1일 전', emoji: '🧀' },
+                { author: '마지막날캠퍼', rating: 5, comment: '철수 전 간단하게 끓여먹기 딱. 부드러운 맛', date: '3일 전', emoji: '🍜' }
+            ]
+        },
+        {
+            id: 'b1_veggie',
+            title: '야채라면',
+            description: '남은 야채 한번에! 건강하고 든든한 아침 라면.',
+            image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=800&auto=format&fit=crop&q=80',
+            searchQuery: '야채라면',
+            category: 'korean',
+            difficulty: 'easy',
+            cookingTime: 15,
+            priceRange: 'low',
+            price: 6500,
+            tags: ['ramen', 'last-day', 'leftover', 'healthy', 'vegetable'],
+            rating: 4.5,
+            servings: 2,
+            allergens: ['gluten', 'soy'],
+            dietary: [],
+            spicyLevel: 2,
+            ingredients: [
+                { name: '라면', amount: '2개' },
+                { name: '당근', amount: '1/2개' },
+                { name: '양파', amount: '1/4개' },
+                { name: '버섯', amount: '3개' },
+                { name: '애호박', amount: '1/4개' }
+            ],
+            seasonings: [
+                { name: '라면스프', amount: '제공' },
+                { name: '참기름', amount: '약간' }
+            ],
+            reviews: [
+                { author: '건강챙김', rating: 5, comment: '전날 BBQ 남은 야채 다 넣으니까 딱! 속도 편하고 좋아요', date: '2일 전', emoji: '🥕' },
+                { author: '제로웨이스트', rating: 5, comment: '남은 재료 한번에 정리. 캠핑 마무리 메뉴로 완벽', date: '4일 전', emoji: '♻️' }
+            ]
+        },
+        {
+            id: 'b1_kimchi',
+            title: '김치라면',
+            description: '남은 김치로 얼큰하게! 한국인의 소울푸드.',
+            image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=800&auto=format&fit=crop&q=80',
+            searchQuery: '김치라면',
+            category: 'korean',
+            difficulty: 'easy',
+            cookingTime: 12,
+            priceRange: 'low',
+            price: 6000,
+            tags: ['ramen', 'last-day', 'leftover', 'spicy', 'traditional'],
+            rating: 4.8,
+            servings: 2,
+            allergens: ['gluten', 'soy'],
+            dietary: [],
+            spicyLevel: 4,
+            ingredients: [
+                { name: '라면', amount: '2개' },
+                { name: '김치', amount: '1컵' },
+                { name: '계란', amount: '1개' },
+                { name: '대파', amount: '약간' }
+            ],
+            seasonings: [
+                { name: '라면스프', amount: '제공' },
+                { name: '김치국물', amount: '2큰술' },
+                { name: '참기름', amount: '약간' }
+            ],
+            reviews: [
+                { author: '김치마니아', rating: 5, comment: '삼겹살 먹고 남은 김치로 끓이니 최고! 얼큰해요', date: '1일 전', emoji: '🌶️' },
+                { author: '얼큰러버', rating: 5, comment: '마지막날 해장으로 딱. 속이 확 풀려요', date: '2일 전', emoji: '🔥' }
+            ]
+        },
+        {
+            id: 'b1_seafood',
+            title: '해물라면',
+            description: '남은 해산물로 시원하게! 바다 향 가득한 라면.',
+            image: 'https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=800&auto=format&fit=crop&q=80',
+            searchQuery: '해물라면',
+            category: 'korean',
+            difficulty: 'easy',
+            cookingTime: 13,
+            priceRange: 'low',
+            price: 7000,
+            tags: ['ramen', 'last-day', 'leftover', 'seafood'],
+            rating: 4.6,
+            servings: 2,
+            allergens: ['gluten', 'soy', 'seafood', 'shellfish'],
+            dietary: [],
+            spicyLevel: 3,
+            ingredients: [
+                { name: '라면', amount: '2개' },
+                { name: '새우', amount: '4마리' },
+                { name: '오징어', amount: '약간' },
+                { name: '홍합', amount: '3개' },
+                { name: '대파', amount: '약간' }
+            ],
+            seasonings: [
+                { name: '라면스프', amount: '제공' },
+                { name: '다시다', amount: '약간' }
+            ],
+            reviews: [
+                { author: '해산물덕후', rating: 5, comment: '전날 감바스 남은 새우 넣으니 국물이 끝내줘요!', date: '1일 전', emoji: '🦐' },
+                { author: '바다캠퍼', rating: 5, comment: '해안 캠핑 마무리는 해물라면이죠. 시원해요', date: '3일 전', emoji: '🌊' }
+            ]
+        },
+        {
+            id: 'b1_mandu',
+            title: '만두라면',
+            description: '남은 만두로 든든하게! 라면 + 만두 = 꿀조합.',
+            image: 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=800&auto=format&fit=crop&q=80',
+            searchQuery: '만두라면',
+            category: 'korean',
+            difficulty: 'easy',
+            cookingTime: 12,
+            priceRange: 'low',
+            price: 6500,
+            tags: ['ramen', 'last-day', 'leftover', 'filling'],
+            rating: 4.7,
+            servings: 2,
+            allergens: ['gluten', 'soy'],
+            dietary: [],
+            spicyLevel: 2,
+            ingredients: [
+                { name: '라면', amount: '2개' },
+                { name: '만두', amount: '6개' },
+                { name: '계란', amount: '1개' },
+                { name: '대파', amount: '약간' }
+            ],
+            seasonings: [
+                { name: '라면스프', amount: '제공' },
+                { name: '참기름', amount: '약간' }
+            ],
+            reviews: [
+                { author: '만두킹', rating: 5, comment: '냉동만두 남은거 넣으니 완전 든든! 한끼 식사로 충분', date: '2일 전', emoji: '🥟' },
+                { author: '간편왕', rating: 5, comment: '끓는 물에 다 넣기만 하면 끝. 철수 전 최고 메뉴', date: '4일 전', emoji: '👨‍🍳' }
+            ]
+        },
+        {
+            id: 'b1_spam',
+            title: '스팸라면 (부대라면)',
+            description: '남은 햄/소시지로 부대찌개 스타일! 든든한 마무리.',
+            image: 'https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=800&auto=format&fit=crop&q=80',
+            searchQuery: '스팸라면 부대라면',
+            category: 'korean',
+            difficulty: 'easy',
+            cookingTime: 13,
+            priceRange: 'low',
+            price: 7000,
+            tags: ['ramen', 'last-day', 'leftover', 'hearty'],
+            rating: 4.8,
+            servings: 2,
+            allergens: ['gluten', 'soy'],
+            dietary: [],
+            spicyLevel: 3,
+            ingredients: [
+                { name: '라면', amount: '2개' },
+                { name: '스팸/햄', amount: '100g' },
+                { name: '소시지', amount: '2개' },
+                { name: '김치', amount: '1/2컵' },
+                { name: '대파', amount: '약간' }
+            ],
+            seasonings: [
+                { name: '라면스프', amount: '제공' },
+                { name: '고춧가루', amount: '약간' }
+            ],
+            reviews: [
+                { author: '부대찌개팬', rating: 5, comment: '전날 BBQ 남은 소시지 정리 완료! 부대찌개 느낌', date: '1일 전', emoji: '🌭' },
+                { author: '캠핑마무리', rating: 5, comment: '남은 재료 싹 정리하면서 든든하게. 완벽한 피날레', date: '3일 전', emoji: '🎬' }
             ]
         },
         {
